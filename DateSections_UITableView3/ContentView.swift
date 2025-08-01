@@ -16,7 +16,7 @@ class CoreDataManager {
     let container: NSPersistentContainer
 
     private init() {
-        container = NSPersistentContainer(name: "MessageEntity") // ← .xcdatamodeld の名前
+        container = NSPersistentContainer(name: "DateSections_UITableView3") // ← .xcdatamodeld の名前
         container.loadPersistentStores { _, error in
             if let error = error {
                 fatalError("Core Data load error: \(error)")
@@ -155,16 +155,22 @@ struct DateGroupedTableView: UIViewControllerRepresentable {
 
 
 class DateGroupedTableViewController: UITableViewController {
-
+    
     var messages: [MessageEntity] = []
     var groupedMessages: [(date: Date, messages: [MessageEntity])] = []
-
+    
     let dateFormatter: DateFormatter = {
         let df = DateFormatter()
         df.dateStyle = .medium
         return df
     }()
-
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+    }
+    
     func groupMessagesByDate() {
         let groupedDict = Dictionary(grouping: messages) { message in
             Calendar.current.startOfDay(for: message.date ?? Date())
@@ -173,29 +179,23 @@ class DateGroupedTableViewController: UITableViewController {
             .map { ($0.key, $0.value) }
             .sorted { $0.0 > $1.0 }
     }
-
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return groupedMessages.count
     }
-
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return groupedMessages[section].messages.count
     }
-
+    
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return dateFormatter.string(from: groupedMessages[section].date)
     }
-
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         cell.textLabel?.text = message.text
         return cell
     }
-}
-
-
-struct Message {
-    let text: String
-    let date: Date
 }

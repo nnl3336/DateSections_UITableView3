@@ -9,6 +9,17 @@ import SwiftUI
 
 @main
 struct DateSections_UITableView3App: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environment(\.managedObjectContext, CoreDataManager.shared.context)
+        }
+    }
+}
+
+/*
+@main
+struct DateSections_UITableView3App: App {
     let persistenceController = PersistenceController.shared
 
     var body: some Scene {
@@ -18,3 +29,4 @@ struct DateSections_UITableView3App: App {
         }
     }
 }
+*/
