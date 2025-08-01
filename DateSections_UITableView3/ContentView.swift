@@ -10,31 +10,6 @@ import CoreData
 
 import UIKit
 
-class CoreDataManager {
-    static let shared = CoreDataManager()
-
-    let container: NSPersistentContainer
-
-    private init() {
-        container = NSPersistentContainer(name: "DateSections_UITableView3") // ← .xcdatamodeld の名前
-        container.loadPersistentStores { _, error in
-            if let error = error {
-                fatalError("Core Data load error: \(error)")
-            }
-        }
-    }
-
-    var context: NSManagedObjectContext {
-        container.viewContext
-    }
-
-    func saveContext() {
-        let context = container.viewContext
-        if context.hasChanges {
-            try? context.save()
-        }
-    }
-}
 
 
 struct TextViewWrapper: UIViewRepresentable {
@@ -167,9 +142,16 @@ class DateGroupedTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+        tableView.register(CustomCell.self, forCellReuseIdentifier: "CustomCell")
     }
+
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let message = groupedMessages[indexPath.section].messages[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CustomCell", for: indexPath) as! CustomCell
+        cell.label.text = message.text
+        return cell
+    }
+
     
     func groupMessagesByDate() {
         let groupedDict = Dictionary(grouping: messages) { message in
@@ -192,10 +174,29 @@ class DateGroupedTableViewController: UITableViewController {
         return dateFormatter.string(from: groupedMessages[section].date)
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let message = groupedMessages[indexPath.section].messages[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        cell.textLabel?.text = message.text
-        return cell
+    
+}
+
+class CustomCell: UITableViewCell {
+    let label = UILabel()
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        label.numberOfLines = 0
+
+        contentView.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+        ])
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
