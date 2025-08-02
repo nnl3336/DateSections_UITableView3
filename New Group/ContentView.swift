@@ -19,7 +19,7 @@ struct ContentView: View {
                 NavigationLink("新規追加") {
                     DetailView(store: store)
                 }
-                DateGroupedTableView(messages: $store.messages, isSelecting: $isSelecting)
+                DateGroupedTableView(messages: $store.messages, isSelecting: $isSelecting, selectedMessages: $store.selectedMessages)
             }
             .navigationTitle("メッセージ一覧")
             .toolbar {
@@ -29,8 +29,14 @@ struct ContentView: View {
                             // Transfer処理
                         }
                         Button("Like") {
-                            // Like処理
+                            let context = CoreDataManager.shared.context
+                            for message in store.selectedMessages {
+                                message.liked.toggle()
+                            }
+                            CoreDataManager.shared.saveContext()
+                            store.fetchMessages()  // 更新
                         }
+
                         Button("Cancel") {
                             isSelecting = false
                             // キャンセル処理
@@ -45,6 +51,7 @@ struct ContentView: View {
 struct DateGroupedTableView: UIViewControllerRepresentable {
     @Binding var messages: [MessageEntity]
     @Binding var isSelecting: Bool
+    @Binding var selectedMessages: [MessageEntity]  // ← 追加
 
     func makeCoordinator() -> Coordinator_DateGroupedTableView {
         Coordinator_DateGroupedTableView(self)  // 親のインスタンスを渡す
@@ -78,7 +85,7 @@ class DateGroupedTableViewController: UITableViewController {
     var messages: [MessageEntity] = []
     var groupedMessages: [(date: Date, messages: [MessageEntity])] = []
     var selectedMessages: [MessageEntity] = []
-
+    
     var coordinator: DateGroupedTableView.Coordinator?
     var isSelectingBinding: Binding<Bool>? // 追加
 
@@ -121,7 +128,7 @@ class DateGroupedTableViewController: UITableViewController {
         let undoManager = context.undoManager ?? UndoManager()
         context.undoManager = undoManager
 
-        for message in selectedMessages {
+        for message in self.selectedMessages {
             undoManager.registerUndo(withTarget: message) { targetMessage in
                 targetMessage.liked.toggle()
                 CoreDataManager.shared.saveContext()

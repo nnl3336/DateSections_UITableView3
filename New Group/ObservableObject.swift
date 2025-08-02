@@ -11,6 +11,7 @@ import CoreData
 class MessageStore: ObservableObject {
     @Published var messages: [MessageEntity] = []
     @Published var selectedMessage: MessageEntity?  // 追加しておくと便利
+    @Published var selectedMessages: [MessageEntity] = []  // 追加！
 
     private let context = CoreDataManager.shared.context
 
