@@ -7,42 +7,7 @@
 
 import SwiftUI
 import CoreData
-
 import UIKit
-
-
-
-struct TextViewWrapper: UIViewRepresentable {
-    @Binding var text: String
-
-    func makeUIView(context: Context) -> UITextView {
-        let textView = UITextView()
-        textView.font = UIFont.systemFont(ofSize: 16)
-        textView.delegate = context.coordinator
-        return textView
-    }
-
-    func updateUIView(_ uiView: UITextView, context: Context) {
-        uiView.text = text
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
-    class Coordinator: NSObject, UITextViewDelegate {
-        var parent: TextViewWrapper
-
-        init(_ parent: TextViewWrapper) {
-            self.parent = parent
-        }
-
-        func textViewDidChange(_ textView: UITextView) {
-            parent.text = textView.text
-        }
-    }
-}
-
 
 struct ContentView: View {
     @StateObject var store = MessageStore()
@@ -77,40 +42,53 @@ struct ContentView: View {
     }
 }
 
-
 struct DateGroupedTableView: UIViewControllerRepresentable {
     @Binding var messages: [MessageEntity]
     @Binding var isSelecting: Bool
 
+    func makeCoordinator() -> Coordinator_DateGroupedTableView {
+        Coordinator_DateGroupedTableView(self)  // 親のインスタンスを渡す
+    }
+
     func makeUIViewController(context: Context) -> DateGroupedTableViewController {
         let vc = DateGroupedTableViewController()
         vc.messages = messages
-        vc.isSelecting = isSelecting
+        vc.isSelectingBinding = context.coordinator.isSelecting  // Binding<Bool>
+        vc.coordinator = context.coordinator
         return vc
     }
 
     func updateUIViewController(_ uiViewController: DateGroupedTableViewController, context: Context) {
         uiViewController.messages = messages
-        uiViewController.isSelecting = isSelecting
-        uiViewController.groupMessagesByDate()   // ← これを必ず呼ぶ
-        uiViewController.tableView.reloadData()  // ← これも必須
+        uiViewController.groupMessagesByDate()
+        uiViewController.tableView.reloadData()
+    }
+
+    class Coordinator_DateGroupedTableView {
+        var isSelecting: Binding<Bool>
+
+        init(_ parent: DateGroupedTableView) {
+            self.isSelecting = parent.$isSelecting  // ここがポイント
+        }
     }
 }
 
 
 class DateGroupedTableViewController: UITableViewController {
-    
     var messages: [MessageEntity] = []
     var groupedMessages: [(date: Date, messages: [MessageEntity])] = []
     var selectedMessages: [MessageEntity] = []
-    
-    var isSelecting = false {
-            didSet {
-                updateToolbar()
-            }
+
+    var coordinator: DateGroupedTableView.Coordinator?
+    var isSelectingBinding: Binding<Bool>? // 追加
+
+    var isSelecting: Bool {
+        get { isSelectingBinding?.wrappedValue ?? false }
+        set {
+            isSelectingBinding?.wrappedValue = newValue
+            updateToolbar()
         }
-    
-    
+    }
 
     let dateFormatter: DateFormatter = {
         let df = DateFormatter()
@@ -123,13 +101,12 @@ class DateGroupedTableViewController: UITableViewController {
         tableView.register(CustomCell.self, forCellReuseIdentifier: "CustomCell")
         tableView.allowsMultipleSelection = true  // ← ここ
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "選択",
-                                                             style: .plain,
-                                                             target: self,
-                                                             action: #selector(toggleSelectionMode))
+                                                            style: .plain,
+                                                            target: self,
+                                                            action: #selector(toggleSelectionMode))
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         tableView.addGestureRecognizer(longPressRecognizer)
         navigationController?.isToolbarHidden = true
-
         
     }
     
@@ -284,6 +261,8 @@ class DateGroupedTableViewController: UITableViewController {
     
     
 }
+
+//
 
 
 class CustomCell: UITableViewCell {
