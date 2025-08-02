@@ -83,9 +83,9 @@ struct DateGroupedTableView: UIViewControllerRepresentable {
     @Binding var isSelecting: Bool
 
     func makeUIViewController(context: Context) -> DateGroupedTableViewController {
-        let vc = DateGroupedTableViewController(isSelecting: isSelecting)
+        let vc = DateGroupedTableViewController()
         vc.messages = messages
-        //vc.isSelecting = isSelecting
+        vc.isSelecting = isSelecting
         return vc
     }
 
@@ -104,19 +104,10 @@ class DateGroupedTableViewController: UITableViewController {
     var groupedMessages: [(date: Date, messages: [MessageEntity])] = []
     var selectedMessages: [MessageEntity] = []
     
-    var isSelecting: Bool {
+    var isSelecting = false {
             didSet {
                 updateToolbar()
             }
-        }
-
-        init(isSelecting: Bool) {
-            self.isSelecting = isSelecting
-            super.init(nibName: nil, bundle: nil)
-        }
-
-        required init?(coder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
         }
     
     
