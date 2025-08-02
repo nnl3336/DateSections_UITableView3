@@ -35,6 +35,7 @@ class MessageStore: ObservableObject {
         let newMessage = MessageEntity(context: context)
         newMessage.text = text
         newMessage.date = Date()
+        newMessage.liked = true  // ← ここで初期値をセット
         CoreDataManager.shared.saveContext()
         fetchMessages()
     }

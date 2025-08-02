@@ -34,9 +34,11 @@ struct ContentView: View {
                                 message.liked.toggle()
                             }
                             CoreDataManager.shared.saveContext()
-                            store.fetchMessages()  // 更新
+                            store.fetchMessages()  // メッセージ一覧を最新化
+                            
+                            store.selectedMessages.removeAll()  // 選択解除
+                            isSelecting = false                 // 選択モードオフ
                         }
-
                         Button("Cancel") {
                             isSelecting = false
                             // キャンセル処理
@@ -187,20 +189,34 @@ class DateGroupedTableViewController: UITableViewController {
         guard gestureRecognizer.state == .began else { return }
 
         let point = gestureRecognizer.location(in: tableView)
-        if let indexPath = tableView.indexPathForRow(at: point) {
-            if !isSelecting {
-                // 選択モードに入る
-                isSelecting = true
-                tableView.allowsMultipleSelection = true
-                navigationItem.rightBarButtonItem?.title = "完了"
-            }
+        guard let indexPath = tableView.indexPathForRow(at: point) else { return }
 
-            // 該当セルを選択状態にする
+        if !isSelecting {
+            isSelecting = true
+            // 選択モード入りと allowsMultipleSelection の切り替えを
+            // メインスレッドの次のループに遅らせる
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.tableView.allowsMultipleSelection = true
+                self.navigationItem.rightBarButtonItem?.title = "完了"
+
+                // 遅延して選択処理
+                self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
+                let message = self.groupedMessages[indexPath.section].messages[indexPath.row]
+                if !self.selectedMessages.contains(where: { $0.id == message.id }) {
+                    self.selectedMessages.append(message)
+                }
+            }
+        } else {
+            // すでに選択モードなら即選択
             tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
             let message = groupedMessages[indexPath.section].messages[indexPath.row]
-            selectedMessages.append(message)
+            if !selectedMessages.contains(where: { $0.id == message.id }) {
+                selectedMessages.append(message)
+            }
         }
     }
+
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
@@ -246,9 +262,14 @@ class DateGroupedTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "CustomCell", for: indexPath) as! CustomCell
+
         cell.titleLabel.text = message.text
-        cell.subtitleLabel.text = "詳細テキストなど必要に応じて" // ここは適宜変更
-        cell.iconView.image = UIImage(systemName: "message") // アイコンもお好みで
+        cell.subtitleLabel.text = "詳細テキストなど"
+        cell.iconView.image = UIImage(systemName: "message")
+
+        // ここでlike状態をセルに反映
+        cell.updateLikeButton(isLiked: message.liked)
+
         return cell
     }
 
@@ -276,6 +297,7 @@ class CustomCell: UITableViewCell {
     let titleLabel = UILabel()
     let subtitleLabel = UILabel()
     let iconView = UIImageView()
+    let likeButton = UIButton(type: .system)  // 追加
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -299,6 +321,11 @@ class CustomCell: UITableViewCell {
         subtitleLabel.numberOfLines = 0
         contentView.addSubview(subtitleLabel)
 
+        // like ボタンの設定
+        likeButton.translatesAutoresizingMaskIntoConstraints = false
+        likeButton.tintColor = .gray
+        contentView.addSubview(likeButton)
+
         // Auto Layout
         NSLayoutConstraint.activate([
             iconView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
@@ -308,16 +335,26 @@ class CustomCell: UITableViewCell {
 
             titleLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 12),
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            titleLabel.trailingAnchor.constraint(equalTo: likeButton.leadingAnchor, constant: -8),
 
             subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
             subtitleLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            subtitleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
+            subtitleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12),
+
+            likeButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            likeButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            likeButton.widthAnchor.constraint(equalToConstant: 24),
+            likeButton.heightAnchor.constraint(equalToConstant: 24)
         ])
     }
-    
-    // CustomCell.swift などで
+
+    func updateLikeButton(isLiked: Bool) {
+        let imageName = isLiked ? "heart.fill" : "heart"
+        likeButton.setImage(UIImage(systemName: imageName), for: .normal)
+        likeButton.tintColor = isLiked ? .systemRed : .gray
+    }
+
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         contentView.backgroundColor = selected ? UIColor.systemBlue.withAlphaComponent(0.2) : .clear
