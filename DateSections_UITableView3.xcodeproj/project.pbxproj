@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		182164D62E3CA3AD00563DFC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164D02E3CA3AD00563DFC /* ContentView.swift */; };
+		182164E52E3DA91A00563DFC /* extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164E42E3DA91A00563DFC /* extension.swift */; };
+		182164E82E3DB9CB00563DFC /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164E72E3DB9CB00563DFC /* DetailView.swift */; };
+		182164EA2E3DB9F100563DFC /* ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164E92E3DB9F100563DFC /* ObservableObject.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		182164B12E3CA2A800563DFC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +34,10 @@
 		1821649A2E3CA2A600563DFC /* DateSections_UITableView3.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DateSections_UITableView3.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		182164B02E3CA2A800563DFC /* DateSections_UITableView3Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DateSections_UITableView3Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		182164BA2E3CA2A800563DFC /* DateSections_UITableView3UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DateSections_UITableView3UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		182164D02E3CA3AD00563DFC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		182164E42E3DA91A00563DFC /* extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension.swift; sourceTree = "<group>"; };
+		182164E72E3DB9CB00563DFC /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
+		182164E92E3DB9F100563DFC /* ObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObject.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +86,7 @@
 		182164912E3CA2A600563DFC = {
 			isa = PBXGroup;
 			children = (
+				182164E62E3DB9B500563DFC /* New Group */,
 				1821649C2E3CA2A600563DFC /* DateSections_UITableView3 */,
 				182164B32E3CA2A800563DFC /* DateSections_UITableView3Tests */,
 				182164BD2E3CA2A800563DFC /* DateSections_UITableView3UITests */,
@@ -90,6 +102,17 @@
 				182164BA2E3CA2A800563DFC /* DateSections_UITableView3UITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		182164E62E3DB9B500563DFC /* New Group */ = {
+			isa = PBXGroup;
+			children = (
+				182164D02E3CA3AD00563DFC /* ContentView.swift */,
+				182164E42E3DA91A00563DFC /* extension.swift */,
+				182164E92E3DB9F100563DFC /* ObservableObject.swift */,
+				182164E72E3DB9CB00563DFC /* DetailView.swift */,
+			);
+			path = "New Group";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -236,6 +259,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				182164D62E3CA3AD00563DFC /* ContentView.swift in Sources */,
+				182164E82E3DB9CB00563DFC /* DetailView.swift in Sources */,
+				182164E52E3DA91A00563DFC /* extension.swift in Sources */,
+				182164EA2E3DB9F100563DFC /* ObservableObject.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
