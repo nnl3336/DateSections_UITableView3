@@ -7,6 +7,25 @@
 
 import SwiftUI
 
+struct DetailView: View {
+    @ObservedObject var store: MessageStore
+    @Environment(\.dismiss) var dismiss
+    @State private var messageText = ""
+
+    var body: some View {
+        VStack {
+            TextViewWrapper(text: $messageText)
+                .frame(height: 200)
+                .padding()
+
+            Button("追加") {
+                store.addMessage(messageText)
+                dismiss()
+            }
+        }
+        .navigationTitle("新規メッセージ")
+    }
+}
 
 struct TextViewWrapper: UIViewRepresentable {
     @Binding var text: String

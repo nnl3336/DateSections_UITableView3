@@ -8,7 +8,7 @@
 import SwiftUI
 import CoreData
 
-struct DetailView: View {
+/*struct DetailView: View {
     @ObservedObject var store: MessageStore
     @Environment(\.dismiss) var dismiss
     @State private var messageText = ""
@@ -28,3 +28,4 @@ struct DetailView: View {
     }
 }
 
+*/

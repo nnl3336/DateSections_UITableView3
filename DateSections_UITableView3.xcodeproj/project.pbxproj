@@ -91,6 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				182164E62E3DB9B500563DFC /* New Group */,
+				187818A22E3F5092000C988A /* - */,
 				1821649C2E3CA2A600563DFC /* DateSections_UITableView3 */,
 				182164B32E3CA2A800563DFC /* DateSections_UITableView3Tests */,
 				182164BD2E3CA2A800563DFC /* DateSections_UITableView3UITests */,
@@ -115,7 +116,6 @@
 				182164EF2E3DBCB100563DFC /* TextView.swift */,
 				1878189F2E3F480A000C988A /* extension */,
 				182164E92E3DB9F100563DFC /* ObservableObject.swift */,
-				182164E72E3DB9CB00563DFC /* DetailView.swift */,
 			);
 			path = "New Group";
 			sourceTree = "<group>";
@@ -127,6 +127,14 @@
 				187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */,
 			);
 			path = extension;
+			sourceTree = "<group>";
+		};
+		187818A22E3F5092000C988A /* - */ = {
+			isa = PBXGroup;
+			children = (
+				182164E72E3DB9CB00563DFC /* DetailView.swift */,
+			);
+			path = "-";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
