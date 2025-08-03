@@ -22,7 +22,7 @@ struct ContentView: View {
                 DateGroupedTableView(messages: $store.messages, isSelecting: $isSelecting, selectedMessages: $store.selectedMessages)
             }
             .navigationTitle("メッセージ一覧")
-            .toolbar {
+            /*.toolbar {
                 if isSelecting {
                     ToolbarItemGroup(placement: .bottomBar) {
                         Button("Transfer") {
@@ -45,7 +45,7 @@ struct ContentView: View {
                         }
                     }
                 }
-            }
+            }*/
         }
     }
 }
@@ -59,18 +59,24 @@ struct DateGroupedTableView: UIViewControllerRepresentable {
         Coordinator_DateGroupedTableView(self)  // 親のインスタンスを渡す
     }
 
-    func makeUIViewController(context: Context) -> DateGroupedTableViewController {
+    func makeUIViewController(context: Context) -> UINavigationController {
         let vc = DateGroupedTableViewController()
         vc.messages = messages
-        vc.isSelectingBinding = context.coordinator.isSelecting  // Binding<Bool>
-        vc.coordinator = context.coordinator
-        return vc
+        vc.isSelectingBinding = $isSelecting
+        vc.selectedMessages = selectedMessages
+        let nav = UINavigationController(rootViewController: vc)
+        nav.isToolbarHidden = true
+        return nav
     }
 
-    func updateUIViewController(_ uiViewController: DateGroupedTableViewController, context: Context) {
-        uiViewController.messages = messages
-        uiViewController.groupMessagesByDate()
-        uiViewController.tableView.reloadData()
+    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {
+        if let vc = uiViewController.viewControllers.first as? DateGroupedTableViewController {
+            vc.messages = messages
+            vc.isSelectingBinding = $isSelecting
+            vc.selectedMessages = selectedMessages
+            vc.groupMessagesByDate()  // もしあるなら
+            vc.tableView.reloadData()
+        }
     }
 
     class Coordinator_DateGroupedTableView {
@@ -94,6 +100,7 @@ class DateGroupedTableViewController: UITableViewController {
     var isSelecting: Bool {
         get { isSelectingBinding?.wrappedValue ?? false }
         set {
+            print("isSelecting will change to \(newValue)")
             isSelectingBinding?.wrappedValue = newValue
             updateToolbar()
         }
@@ -105,21 +112,27 @@ class DateGroupedTableViewController: UITableViewController {
         return df
     }()
     
+    //***
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(CustomCell.self, forCellReuseIdentifier: "CustomCell")
-        tableView.allowsMultipleSelection = true  // ← ここ
+        tableView.allowsMultipleSelection = false  // 最初はオフにしておく
+        
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "選択",
                                                             style: .plain,
                                                             target: self,
                                                             action: #selector(toggleSelectionMode))
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         tableView.addGestureRecognizer(longPressRecognizer)
-        navigationController?.isToolbarHidden = true
         
+        navigationController?.isToolbarHidden = true  // 最初は隠す
     }
+
+    //***
     
     @objc func transferTapped() {
+        // Transfer ロジックここに
         print("Transfer tapped")
     }
 
@@ -130,16 +143,28 @@ class DateGroupedTableViewController: UITableViewController {
         let undoManager = context.undoManager ?? UndoManager()
         context.undoManager = undoManager
 
-        for message in self.selectedMessages {
-            undoManager.registerUndo(withTarget: message) { targetMessage in
-                targetMessage.liked.toggle()
-                CoreDataManager.shared.saveContext()
+        var indexPathsToReload: [IndexPath] = []
+
+        for (sectionIndex, group) in groupedMessages.enumerated() {
+            for (rowIndex, message) in group.messages.enumerated() {
+                if selectedMessages.contains(where: { $0.id == message.id }) {
+                    undoManager.registerUndo(withTarget: message) { target in
+                        target.liked.toggle()
+                        CoreDataManager.shared.saveContext()
+                    }
+                    message.liked.toggle()
+                    indexPathsToReload.append(IndexPath(row: rowIndex, section: sectionIndex))
+                }
             }
-            message.liked.toggle()
         }
 
         CoreDataManager.shared.saveContext()
+        tableView.reloadRows(at: indexPathsToReload, with: .none)
+
         showToast(message: "Liked 状態を変更しました")
+
+        selectedMessages.removeAll()
+        isSelecting = false
     }
 
     @objc func cancelTapped() {
@@ -147,6 +172,7 @@ class DateGroupedTableViewController: UITableViewController {
         selectedMessages.removeAll()
         tableView.reloadData()
     }
+
     
     @objc func undoTapped() {
         CoreDataManager.shared.context.undoManager?.undo()
@@ -160,18 +186,21 @@ class DateGroupedTableViewController: UITableViewController {
 
     
     func updateToolbar() {
-            if isSelecting {
-                let transfer = UIBarButtonItem(title: "Transfer", style: .plain, target: self, action: #selector(transferTapped))
-                let like = UIBarButtonItem(title: "Like", style: .plain, target: self, action: #selector(likeTapped))
-                let cancel = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancelTapped))
-                let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-                
-                setToolbarItems([transfer, flexible, like, flexible, cancel], animated: true)
-                navigationController?.setToolbarHidden(false, animated: true)
-            } else {
-                navigationController?.setToolbarHidden(true, animated: true)
-            }
+        print("updateToolbar called, isSelecting = \(isSelecting)")
+        if isSelecting {
+            let transfer = UIBarButtonItem(title: "Transfer", style: .plain, target: self, action: #selector(transferTapped))
+            let like = UIBarButtonItem(title: "Like", style: .plain, target: self, action: #selector(likeTapped))
+            let cancel = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancelTapped))
+            let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+
+            setToolbarItems([transfer, flexible, like, flexible, cancel], animated: true)
+            navigationController?.setToolbarHidden(false, animated: true)
+        } else {
+            navigationController?.setToolbarHidden(true, animated: true)
         }
+    }
+
+    
     
     @objc func toggleSelectionMode() {
         isSelecting.toggle()
@@ -256,8 +285,6 @@ class DateGroupedTableViewController: UITableViewController {
         tableView.reloadData()
     }*/
     
-    
-
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
@@ -272,8 +299,6 @@ class DateGroupedTableViewController: UITableViewController {
 
         return cell
     }
-
-
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return groupedMessages.count

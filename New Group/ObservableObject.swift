@@ -28,7 +28,12 @@ class MessageStore: ObservableObject {
     func fetchMessages() {
         let request = NSFetchRequest<MessageEntity>(entityName: "MessageEntity")
         request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
-        messages = (try? context.fetch(request)) ?? []
+        let fetched = (try? context.fetch(request)) ?? []
+
+        DispatchQueue.main.async {
+            self.messages = fetched
+        }
+        print("fetchMessages!")
     }
 
     func addMessage(_ text: String) {
