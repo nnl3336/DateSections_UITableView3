@@ -139,9 +139,9 @@ extension DateGroupedTableViewController {
         if isSelecting {
             selectedMessages.append(message)
         } else {
-            let detailView = DetailView(store: MessageStore(message: message))
-            let hostingController = UIHostingController(rootView: detailView)
-            navigationController?.pushViewController(hostingController, animated: true)
+            let detailVC = DetailViewController()
+            detailVC.store = MessageStore(message: message)
+            navigationController?.pushViewController(detailVC, animated: true)
         }
     }
 
