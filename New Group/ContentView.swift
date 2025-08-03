@@ -14,7 +14,10 @@ struct ContentView: View {
     @State private var isSelecting = false
 
     var body: some View {
-        DateGroupedTableView(messages: $store.messages, isSelecting: $isSelecting, selectedMessages: $store.selectedMessages)
+        DateGroupedTableView(store: store,
+                             messages: $store.messages,
+                             isSelecting: $isSelecting,
+                             selectedMessages: $store.selectedMessages)
     }
 }
 
