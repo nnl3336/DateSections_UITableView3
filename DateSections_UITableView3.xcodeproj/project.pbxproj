@@ -12,6 +12,7 @@
 		182164E82E3DB9CB00563DFC /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164E72E3DB9CB00563DFC /* DetailView.swift */; };
 		182164EA2E3DB9F100563DFC /* ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164E92E3DB9F100563DFC /* ObservableObject.swift */; };
 		182164F02E3DBCB100563DFC /* TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164EF2E3DBCB100563DFC /* TextView.swift */; };
+		187818A12E3F4837000C988A /* extension_DateGroupedTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,7 @@
 		182164E72E3DB9CB00563DFC /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		182164E92E3DB9F100563DFC /* ObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObject.swift; sourceTree = "<group>"; };
 		182164EF2E3DBCB100563DFC /* TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextView.swift; sourceTree = "<group>"; };
+		187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_DateGroupedTableViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -111,11 +113,20 @@
 			children = (
 				182164D02E3CA3AD00563DFC /* ContentView.swift */,
 				182164EF2E3DBCB100563DFC /* TextView.swift */,
-				182164E42E3DA91A00563DFC /* extension.swift */,
+				1878189F2E3F480A000C988A /* extension */,
 				182164E92E3DB9F100563DFC /* ObservableObject.swift */,
 				182164E72E3DB9CB00563DFC /* DetailView.swift */,
 			);
 			path = "New Group";
+			sourceTree = "<group>";
+		};
+		1878189F2E3F480A000C988A /* extension */ = {
+			isa = PBXGroup;
+			children = (
+				182164E42E3DA91A00563DFC /* extension.swift */,
+				187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */,
+			);
+			path = extension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -262,6 +273,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				187818A12E3F4837000C988A /* extension_DateGroupedTableViewController.swift in Sources */,
 				182164D62E3CA3AD00563DFC /* ContentView.swift in Sources */,
 				182164E82E3DB9CB00563DFC /* DetailView.swift in Sources */,
 				182164E52E3DA91A00563DFC /* extension.swift in Sources */,
@@ -437,7 +449,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -476,7 +488,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
