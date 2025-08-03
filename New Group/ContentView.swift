@@ -93,31 +93,19 @@ class DateGroupedTableViewController: UITableViewController {
     var messages: [MessageEntity] = []
     var groupedMessages: [(date: Date, messages: [MessageEntity])] = []
     var selectedMessages: [MessageEntity] = []
-    
-    var coordinator: DateGroupedTableView.Coordinator?
-    var isSelectingBinding: Binding<Bool>? // 追加
 
-    var isSelecting: Bool {
-        get { isSelectingBinding?.wrappedValue ?? false }
-        set {
-            print("isSelecting will change to \(newValue)")
-            isSelectingBinding?.wrappedValue = newValue
-            updateToolbar()
-        }
-    }
+    var isSelectingBinding: Binding<Bool>? // SwiftUIの状態とバインド
 
     let dateFormatter: DateFormatter = {
         let df = DateFormatter()
         df.dateStyle = .medium
         return df
     }()
-    
-    //***
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(CustomCell.self, forCellReuseIdentifier: "CustomCell")
-        tableView.allowsMultipleSelection = false  // 最初はオフにしておく
+        tableView.allowsMultipleSelection = false  // 最初はオフ
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "選択",
                                                             style: .plain,
@@ -125,16 +113,79 @@ class DateGroupedTableViewController: UITableViewController {
                                                             action: #selector(toggleSelectionMode))
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         tableView.addGestureRecognizer(longPressRecognizer)
-        
-        navigationController?.isToolbarHidden = true  // 最初は隠す
+
+        navigationController?.isToolbarHidden = true // 最初は隠す
     }
 
-    //***
+    @objc func toggleSelectionMode() {
+        guard let isSelectingBinding = isSelectingBinding else { return }
+        let newValue = !isSelectingBinding.wrappedValue
+        isSelectingBinding.wrappedValue = newValue
+        updateToolbar()
+
+        tableView.allowsMultipleSelection = newValue
+        navigationItem.rightBarButtonItem?.title = newValue ? "完了" : "選択"
+
+        if !newValue {
+            selectedMessages.removeAll()
+            for indexPath in tableView.indexPathsForSelectedRows ?? [] {
+                tableView.deselectRow(at: indexPath, animated: true)
+            }
+        }
+    }
     
     @objc func transferTapped() {
         // Transfer ロジックここに
         print("Transfer tapped")
     }
+
+    func updateToolbar() {
+        let isSelecting = isSelectingBinding?.wrappedValue ?? false
+        print("updateToolbar called, isSelecting = \(isSelecting)")
+        if isSelecting {
+            let transfer = UIBarButtonItem(title: "Transfer", style: .plain, target: self, action: #selector(transferTapped))
+            let like = UIBarButtonItem(title: "Like", style: .plain, target: self, action: #selector(likeTapped))
+            let cancel = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancelTapped))
+            let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+
+            setToolbarItems([transfer, flexible, like, flexible, cancel], animated: true)
+            navigationController?.setToolbarHidden(false, animated: true)
+        } else {
+            navigationController?.setToolbarHidden(true, animated: true)
+        }
+    }
+    
+    @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+        guard gestureRecognizer.state == .began else { return }
+
+        let point = gestureRecognizer.location(in: tableView)
+        guard let indexPath = tableView.indexPathForRow(at: point) else { return }
+
+        if isSelectingBinding?.wrappedValue != true {
+            isSelectingBinding?.wrappedValue = true
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.tableView.allowsMultipleSelection = true
+                self.navigationItem.rightBarButtonItem?.title = "完了"
+
+                self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
+                let message = self.groupedMessages[indexPath.section].messages[indexPath.row]
+                if !self.selectedMessages.contains(where: { $0.id == message.id }) {
+                    self.selectedMessages.append(message)
+                }
+            }
+        } else {
+            // すでに選択モードなら即選択
+            tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
+            let message = groupedMessages[indexPath.section].messages[indexPath.row]
+            if !selectedMessages.contains(where: { $0.id == message.id }) {
+                selectedMessages.append(message)
+            }
+        }
+    }
+
+
+    // --- 他のメソッドは省略（likeTapped, cancelTappedなどは元のまま） ---
 
     @objc func likeTapped() {
         guard !selectedMessages.isEmpty else { return }
@@ -164,127 +215,24 @@ class DateGroupedTableViewController: UITableViewController {
         showToast(message: "Liked 状態を変更しました")
 
         selectedMessages.removeAll()
-        isSelecting = false
+
+        // 選択モードオフ＆ツールバー非表示
+        if let isSelectingBinding = isSelectingBinding {
+            isSelectingBinding.wrappedValue = false
+        }
+        updateToolbar()
     }
 
     @objc func cancelTapped() {
-        isSelecting = false
         selectedMessages.removeAll()
+        if let isSelectingBinding = isSelectingBinding {
+            isSelectingBinding.wrappedValue = false
+        }
+        updateToolbar()
         tableView.reloadData()
     }
 
-    
-    @objc func undoTapped() {
-        CoreDataManager.shared.context.undoManager?.undo()
-        CoreDataManager.shared.saveContext()
-    }
-
-    @objc func redoTapped() {
-        CoreDataManager.shared.context.undoManager?.redo()
-        CoreDataManager.shared.saveContext()
-    }
-
-    
-    func updateToolbar() {
-        print("updateToolbar called, isSelecting = \(isSelecting)")
-        if isSelecting {
-            let transfer = UIBarButtonItem(title: "Transfer", style: .plain, target: self, action: #selector(transferTapped))
-            let like = UIBarButtonItem(title: "Like", style: .plain, target: self, action: #selector(likeTapped))
-            let cancel = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancelTapped))
-            let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-
-            setToolbarItems([transfer, flexible, like, flexible, cancel], animated: true)
-            navigationController?.setToolbarHidden(false, animated: true)
-        } else {
-            navigationController?.setToolbarHidden(true, animated: true)
-        }
-    }
-
-    
-    
-    @objc func toggleSelectionMode() {
-        isSelecting.toggle()
-        tableView.allowsMultipleSelection = isSelecting
-        navigationItem.rightBarButtonItem?.title = isSelecting ? "完了" : "選択"
-        if !isSelecting {
-            selectedMessages.removeAll()
-            for indexPath in tableView.indexPathsForSelectedRows ?? [] {
-                tableView.deselectRow(at: indexPath, animated: true)
-            }
-        }
-    }
-    
-    @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
-        guard gestureRecognizer.state == .began else { return }
-
-        let point = gestureRecognizer.location(in: tableView)
-        guard let indexPath = tableView.indexPathForRow(at: point) else { return }
-
-        if !isSelecting {
-            isSelecting = true
-            // 選択モード入りと allowsMultipleSelection の切り替えを
-            // メインスレッドの次のループに遅らせる
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.tableView.allowsMultipleSelection = true
-                self.navigationItem.rightBarButtonItem?.title = "完了"
-
-                // 遅延して選択処理
-                self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
-                let message = self.groupedMessages[indexPath.section].messages[indexPath.row]
-                if !self.selectedMessages.contains(where: { $0.id == message.id }) {
-                    self.selectedMessages.append(message)
-                }
-            }
-        } else {
-            // すでに選択モードなら即選択
-            tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
-            let message = groupedMessages[indexPath.section].messages[indexPath.row]
-            if !selectedMessages.contains(where: { $0.id == message.id }) {
-                selectedMessages.append(message)
-            }
-        }
-    }
-
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let message = groupedMessages[indexPath.section].messages[indexPath.row]
-
-        if isSelecting {
-            selectedMessages.append(message)
-        } else {
-            // SwiftUIのDetailViewをUIHostingControllerでラップして表示
-            let detailView = DetailView(store: MessageStore(message: message)) // 例：messageを渡す
-            let hostingController = UIHostingController(rootView: detailView)
-            navigationController?.pushViewController(hostingController, animated: true)
-        }
-    }
-
-    override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        guard isSelecting else { return }
-        let message = groupedMessages[indexPath.section].messages[indexPath.row]
-        selectedMessages.removeAll { $0.id == message.id }
-    }
-
-
-    /*@objc func toggleSelectionMode() {
-        isSelecting.toggle()
-        tableView.allowsMultipleSelection = isSelecting
-        tableView.reloadData() // 見た目も切り替える場合
-    }*/
-    
-    /*#@objc func transferSelectedMessages() {
-        guard !selectedMessages.isEmpty else { return }
-
-        // 例: どこかのフォルダに移動するなど
-        for message in selectedMessages {
-            message.folder = "新しいフォルダ名"
-        }
-
-        selectedMessages.removeAll()
-        tableView.reloadData()
-    }*/
-    
+    // ... handleLongPressやtableViewのdelegateメソッドも同様に変更不要 ...
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
@@ -294,25 +242,22 @@ class DateGroupedTableViewController: UITableViewController {
         cell.subtitleLabel.text = "詳細テキストなど"
         cell.iconView.image = UIImage(systemName: "message")
 
-        // ここでlike状態をセルに反映
         cell.updateLikeButton(isLiked: message.liked)
 
         return cell
     }
-    
+
     override func numberOfSections(in tableView: UITableView) -> Int {
         return groupedMessages.count
     }
-    
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return groupedMessages[section].messages.count
     }
-    
+
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return dateFormatter.string(from: groupedMessages[section].date)
     }
-    
-    
 }
 
 //
