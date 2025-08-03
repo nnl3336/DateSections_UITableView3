@@ -24,6 +24,13 @@ class MessageStore: ObservableObject {
         self.selectedMessage = message
         fetchMessages()
     }
+    
+    func updateMessage(_ message: MessageEntity, withText text: String) {
+        message.text = text
+        message.date = Date()  // もし日時も更新するなら
+        CoreDataManager.shared.saveContext()
+        fetchMessages()
+    }
 
     func fetchMessages() {
         let request = NSFetchRequest<MessageEntity>(entityName: "MessageEntity")

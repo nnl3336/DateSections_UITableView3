@@ -41,17 +41,11 @@ extension DetailViewController {
 // MARK: - Actions
 
 extension DetailViewController {
-    func updateMessage(_ message: MessageEntity, withText text: String) {
-        message.text = text
-        message.date = Date()  // もし日時も更新するなら
-        CoreDataManager.shared.saveContext()
-        store.fetchMessages()
-    }
 
     @objc private func addButtonTapped() {
         if let message = message {
             // 既存のメッセージを更新
-            updateMessage(message, withText: textView.text)
+            store.updateMessage(message, withText: textView.text)
         } else {
             // 新規メッセージ作成
             store.addMessage(textView.text)

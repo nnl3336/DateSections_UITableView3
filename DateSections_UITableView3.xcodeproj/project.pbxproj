@@ -114,7 +114,7 @@
 		182164E62E3DB9B500563DFC /* New Group */ = {
 			isa = PBXGroup;
 			children = (
-				182164D02E3CA3AD00563DFC /* ContentView.swift */,
+				187818A62E3F821C000C988A /* ContentView */,
 				187818A32E3F7769000C988A /* TextView */,
 				1878189F2E3F480A000C988A /* extension */,
 				182164E92E3DB9F100563DFC /* ObservableObject.swift */,
@@ -126,7 +126,6 @@
 			isa = PBXGroup;
 			children = (
 				182164E42E3DA91A00563DFC /* extension.swift */,
-				187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */,
 			);
 			path = extension;
 			sourceTree = "<group>";
@@ -146,6 +145,15 @@
 				187818A42E3F77C1000C988A /* extension_TextView.swift */,
 			);
 			path = TextView;
+			sourceTree = "<group>";
+		};
+		187818A62E3F821C000C988A /* ContentView */ = {
+			isa = PBXGroup;
+			children = (
+				182164D02E3CA3AD00563DFC /* ContentView.swift */,
+				187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */,
+			);
+			path = ContentView;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

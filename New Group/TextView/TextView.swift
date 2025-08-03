@@ -22,6 +22,8 @@ class DetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        print("選択されたUIViewController: message.text = \(message?.text ?? "nil")")
 
         view.backgroundColor = .systemBackground
         title = "新規メッセージ"

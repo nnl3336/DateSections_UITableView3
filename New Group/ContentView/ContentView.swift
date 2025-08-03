@@ -10,24 +10,23 @@ import CoreData
 import UIKit
 
 struct ContentView: View {
-    @StateObject var store = MessageStore()
-    @State private var isSelecting = false
 
     var body: some View {
-        DateGroupedTableView(store: store,
+        DateGroupedTableView(/*store: store,
                              messages: $store.messages,
                              isSelecting: $isSelecting,
-                             selectedMessages: $store.selectedMessages)
+                             selectedMessages: $store.selectedMessages*/)
     }
 }
 
 //***
 
 struct DateGroupedTableView: UIViewControllerRepresentable {
-    var store: MessageStore!
-    @Binding var messages: [MessageEntity]
-    @Binding var isSelecting: Bool
-    @Binding var selectedMessages: [MessageEntity]  // ← 追加
+    @StateObject var store = MessageStore()
+    //@Binding var messages: [MessageEntity]
+    @State private var isSelecting = false
+    
+    //@Binding var selectedMessages: [MessageEntity]  // ← 追加
 
     func makeCoordinator() -> Coordinator_DateGroupedTableView {
         Coordinator_DateGroupedTableView(self)  // 親のインスタンスを渡す
@@ -36,9 +35,9 @@ struct DateGroupedTableView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UINavigationController {
         let vc = DateGroupedTableViewController()
         vc.store = store  // ✅ ← ここで渡す
-        vc.messages = messages
+        vc.messages = store.messages
         vc.isSelectingBinding = $isSelecting
-        vc.selectedMessages = selectedMessages
+        vc.selectedMessages = store.selectedMessages
         let nav = UINavigationController(rootViewController: vc)
         nav.isToolbarHidden = true
         return nav
@@ -46,9 +45,9 @@ struct DateGroupedTableView: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {
         if let vc = uiViewController.viewControllers.first as? DateGroupedTableViewController {
-            vc.messages = messages
+            vc.messages = store.messages
             vc.isSelectingBinding = $isSelecting
-            vc.selectedMessages = selectedMessages
+            vc.selectedMessages = store.selectedMessages
             vc.groupMessagesByDate()  // もしあるなら
             vc.tableView.reloadData()
         }
@@ -69,6 +68,7 @@ class DateGroupedTableViewController: UITableViewController {
     var store: MessageStore!  // ← ここで定義しておく
     var messages: [MessageEntity] = []
     var groupedMessages: [(date: Date, messages: [MessageEntity])] = []
+    
     var selectedMessages: [MessageEntity] = []
     
     var coordinator: DateGroupedTableView.Coordinator?
