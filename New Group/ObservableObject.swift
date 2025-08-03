@@ -36,12 +36,21 @@ class MessageStore: ObservableObject {
         print("fetchMessages!")
     }
 
-    func addMessage(_ text: String) {
-        let newMessage = MessageEntity(context: context)
-        newMessage.text = text
-        newMessage.date = Date()
-        newMessage.liked = true  // ← ここで初期値をセット
+    func addMessage(_ text: String, selectedMessage: MessageEntity? = nil) {
+        if let messageToUpdate = selectedMessage {
+            // 既存のメッセージを上書き
+            messageToUpdate.text = text
+            messageToUpdate.date = Date()
+            // liked は変更しないか必要ならここで設定
+        } else {
+            // 新規作成
+            let newMessage = MessageEntity(context: context)
+            newMessage.text = text
+            newMessage.date = Date()
+            newMessage.liked = true  // 初期値セット
+        }
         CoreDataManager.shared.saveContext()
         fetchMessages()
     }
+
 }

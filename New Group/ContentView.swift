@@ -21,6 +21,7 @@ struct ContentView: View {
 //***
 
 struct DateGroupedTableView: UIViewControllerRepresentable {
+    var store: MessageStore!
     @Binding var messages: [MessageEntity]
     @Binding var isSelecting: Bool
     @Binding var selectedMessages: [MessageEntity]  // ← 追加
@@ -31,6 +32,7 @@ struct DateGroupedTableView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UINavigationController {
         let vc = DateGroupedTableViewController()
+        vc.store = store  // ✅ ← ここで渡す
         vc.messages = messages
         vc.isSelectingBinding = $isSelecting
         vc.selectedMessages = selectedMessages
@@ -61,6 +63,7 @@ struct DateGroupedTableView: UIViewControllerRepresentable {
 //***
 
 class DateGroupedTableViewController: UITableViewController {
+    var store: MessageStore!  // ← ここで定義しておく
     var messages: [MessageEntity] = []
     var groupedMessages: [(date: Date, messages: [MessageEntity])] = []
     var selectedMessages: [MessageEntity] = []
@@ -95,11 +98,6 @@ class DateGroupedTableViewController: UITableViewController {
         // ナビゲーションバーの設定
         navigationController?.navigationBar.prefersLargeTitles = true
         title = "メッセージ一覧"
-
-        // ツールバー項目の設定
-        /*let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped))
-        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        toolbarItems = [flexibleSpace, addButton, flexibleSpace]*/
         
         navigationItem.rightBarButtonItems = [
             UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped)),

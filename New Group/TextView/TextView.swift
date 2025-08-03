@@ -8,12 +8,17 @@
 import SwiftUI
 import UIKit
 
-class DetailViewController: UIViewController, UITextViewDelegate {
-    var store: MessageStore!  // SwiftUIのObservedObjectの代わりに参照を持つ
+class DetailViewController: UIViewController {
+    var store: MessageStore!
+    var message: MessageEntity? {
+        didSet {
+            messageText = message?.text ?? ""
+        }
+    }
     var messageText: String = ""
 
-    private let textView = UITextView()
-    private let addButton = UIButton(type: .system)
+    let textView = UITextView()
+    let addButton = UIButton(type: .system)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,44 +30,8 @@ class DetailViewController: UIViewController, UITextViewDelegate {
         setupButton()
         setupLayout()
     }
-
-    private func setupTextView() {
-        textView.font = UIFont.systemFont(ofSize: 16)
-        textView.delegate = self
-        textView.text = messageText
-        textView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(textView)
-    }
-
-    private func setupButton() {
-        addButton.setTitle("追加", for: .normal)
-        addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
-        addButton.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(addButton)
-    }
-
-    private func setupLayout() {
-        NSLayoutConstraint.activate([
-            textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            textView.heightAnchor.constraint(equalToConstant: 200),
-
-            addButton.topAnchor.constraint(equalTo: textView.bottomAnchor, constant: 20),
-            addButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        ])
-    }
-
-    @objc private func addButtonTapped() {
-        store.addMessage(textView.text)
-        dismiss(animated: true)
-    }
-
-    // UITextViewDelegate
-    func textViewDidChange(_ textView: UITextView) {
-        messageText = textView.text
-    }
 }
+
 
 //SwiftUI
 

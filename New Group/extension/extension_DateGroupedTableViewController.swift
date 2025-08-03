@@ -145,11 +145,13 @@ extension DateGroupedTableViewController {
         if isSelecting {
             selectedMessages.append(message)
         } else {
-            let detailVC = DetailViewController()
-            detailVC.store = MessageStore(message: message)
-            navigationController?.pushViewController(detailVC, animated: true)
+            let vc = DetailViewController()
+            vc.message = message  // ← ここで渡す
+            vc.store = store // 必要ならここで渡す
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
+
 
     override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         guard isSelecting else { return }

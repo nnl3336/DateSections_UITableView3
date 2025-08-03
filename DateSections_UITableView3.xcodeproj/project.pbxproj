@@ -13,6 +13,7 @@
 		182164EA2E3DB9F100563DFC /* ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164E92E3DB9F100563DFC /* ObservableObject.swift */; };
 		182164F02E3DBCB100563DFC /* TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164EF2E3DBCB100563DFC /* TextView.swift */; };
 		187818A12E3F4837000C988A /* extension_DateGroupedTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */; };
+		187818A52E3F77C1000C988A /* extension_TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A42E3F77C1000C988A /* extension_TextView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,6 +43,7 @@
 		182164E92E3DB9F100563DFC /* ObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObject.swift; sourceTree = "<group>"; };
 		182164EF2E3DBCB100563DFC /* TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextView.swift; sourceTree = "<group>"; };
 		187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_DateGroupedTableViewController.swift; sourceTree = "<group>"; };
+		187818A42E3F77C1000C988A /* extension_TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_TextView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -113,7 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				182164D02E3CA3AD00563DFC /* ContentView.swift */,
-				182164EF2E3DBCB100563DFC /* TextView.swift */,
+				187818A32E3F7769000C988A /* TextView */,
 				1878189F2E3F480A000C988A /* extension */,
 				182164E92E3DB9F100563DFC /* ObservableObject.swift */,
 			);
@@ -135,6 +137,15 @@
 				182164E72E3DB9CB00563DFC /* DetailView.swift */,
 			);
 			path = "-";
+			sourceTree = "<group>";
+		};
+		187818A32E3F7769000C988A /* TextView */ = {
+			isa = PBXGroup;
+			children = (
+				182164EF2E3DBCB100563DFC /* TextView.swift */,
+				187818A42E3F77C1000C988A /* extension_TextView.swift */,
+			);
+			path = TextView;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -283,6 +294,7 @@
 			files = (
 				187818A12E3F4837000C988A /* extension_DateGroupedTableViewController.swift in Sources */,
 				182164D62E3CA3AD00563DFC /* ContentView.swift in Sources */,
+				187818A52E3F77C1000C988A /* extension_TextView.swift in Sources */,
 				182164E82E3DB9CB00563DFC /* DetailView.swift in Sources */,
 				182164E52E3DA91A00563DFC /* extension.swift in Sources */,
 				182164EA2E3DB9F100563DFC /* ObservableObject.swift in Sources */,
