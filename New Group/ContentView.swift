@@ -119,7 +119,7 @@ class DateGroupedTableViewController: UITableViewController {
         let undoManager = context.undoManager ?? UndoManager()
         context.undoManager = undoManager
 
-        var indexPathsToReload: [IndexPath] = []
+        var indexPathsToReload: [IndexPath] = [] 
 
         for (sectionIndex, group) in groupedMessages.enumerated() {
             for (rowIndex, message) in group.messages.enumerated() {
