@@ -59,6 +59,12 @@ extension DateGroupedTableViewController {
 // MARK: - Actions
 
 extension DateGroupedTableViewController {
+    @objc func addButtonTapped() {
+        let detailVC = DetailViewController()
+        detailVC.store = MessageStore()
+        navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
     @objc func transferTapped() {
         // Transfer ロジックここに
         print("Transfer tapped")

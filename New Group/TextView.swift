@@ -32,7 +32,7 @@ class DetailViewController: UIViewController, UITextViewDelegate {
         textView.text = messageText
         textView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(textView)
-    } 
+    }
 
     private func setupButton() {
         addButton.setTitle("追加", for: .normal)

@@ -87,23 +87,34 @@ class DateGroupedTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.register(CustomCell.self, forCellReuseIdentifier: "CustomCell")
-        tableView.allowsMultipleSelection = false  // 最初はオフにしておく
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "選択",
-                                                            style: .plain,
-                                                            target: self,
-                                                            action: #selector(toggleSelectionMode))
+        // テーブルビュー初期設定
+        tableView.register(CustomCell.self, forCellReuseIdentifier: "CustomCell")
+        tableView.allowsMultipleSelection = false
+
+        // ナビゲーションバーの設定
+        navigationController?.navigationBar.prefersLargeTitles = true
+        title = "メッセージ一覧"
+
+        // ツールバー項目の設定
+        /*let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped))
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        toolbarItems = [flexibleSpace, addButton, flexibleSpace]*/
+        
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped)),
+            UIBarButtonItem(title: "選択", style: .plain, target: self, action: #selector(toggleSelectionMode))
+        ]
+
+
+        // 最初はツールバーを非表示（isSelecting によって切り替え）
+        navigationController?.setToolbarHidden(!isSelecting, animated: false)
+
+        // 長押しジェスチャー追加
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
         tableView.addGestureRecognizer(longPressRecognizer)
-        
-        navigationController?.isToolbarHidden = true  // 最初は隠す
-        
-        title = "メッセージ一覧"
-        navigationController?.setToolbarHidden(!isSelecting, animated: true)
-        navigationController?.navigationBar.prefersLargeTitles = true
-        
     }
+
 }
 
 //
