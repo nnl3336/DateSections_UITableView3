@@ -13,7 +13,7 @@ extension DetailViewController {
     func setupTextView() {
         textView.font = UIFont.systemFont(ofSize: 16)
         textView.delegate = self
-        textView.text = messageText
+        textView.attributedText = messageText
         textView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(textView)
     }
@@ -43,6 +43,18 @@ extension DetailViewController {
 extension DetailViewController {
 
     @objc private func addButtonTapped() {
+        if let message = message {
+            print("Updating existing message: \(message)")
+            store.updateMessage(message, withAttributedText: messageText)
+        } else {
+            print("Adding new message")
+            store.addMessage(messageText)
+        }
+        dismiss(animated: true)
+    }
+    
+    // String
+    /*@objc private func addButtonTapped() {
         //print("addButtonTapped: message.text = \(message?.text ?? "nil")")
         if let message = message {
             print("Updating existing message: \(message)")
@@ -54,7 +66,7 @@ extension DetailViewController {
         //store.fetchMessages()  // 最新データを取得し @Published messages を更新
 
         dismiss(animated: true)
-    }
+    }*/
 
 }
 
@@ -62,6 +74,6 @@ extension DetailViewController {
 
 extension DetailViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
-        messageText = textView.text
+        messageText = NSMutableAttributedString(attributedString: textView.attributedText)
     }
 }

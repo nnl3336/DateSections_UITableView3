@@ -76,7 +76,11 @@ extension DateGroupedTableViewController: UITableViewDataSource {
 
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "CustomCell", for: indexPath) as! CustomCell
-        cell.titleLabel.text = message.text
+        if let attrText = message.attributedText as? NSAttributedString {
+            cell.titleLabel.text = attrText.string
+        } else {
+            cell.titleLabel.text = ""
+        }
         cell.subtitleLabel.text = "詳細テキストなど"
         cell.iconView.image = UIImage(systemName: "message")
         cell.updateLikeButton(isLiked: message.liked)
@@ -97,9 +101,13 @@ extension DateGroupedTableViewController: UITableViewDelegate {
         
         //print("タップされたmessage.text: \(message.text ?? "nil")")
         
-        if (message.text ?? "").isEmpty {
-            //print("⚠️ テキストが空のメッセージです")
+        if let attrText = message.attributedText as? NSAttributedString, attrText.length > 0 {
+            // テキストの長さが0より大きい → 内容あり
+        } else {
+            // テキストの長さが0またはnil → 空
+            print("⚠️ テキストが空のメッセージです")
         }
+
         
         if isSelecting {
             selectedMessages.append(message)
@@ -108,7 +116,7 @@ extension DateGroupedTableViewController: UITableViewDelegate {
             vc.message = message  // ここで渡す
             vc.store = store
             vc.messageDate = message.date
-            print("DetailViewController に message.text を渡します: \(vc.message?.text ?? "nil")")
+            print("DetailViewController に message.text を渡します: \((vc.message?.attributedText as? NSAttributedString)?.string ?? "nil")")
             navigationController?.pushViewController(vc, animated: true)
         }
         

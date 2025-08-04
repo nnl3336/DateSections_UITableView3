@@ -12,13 +12,17 @@ class DetailViewController: UIViewController {
     var store: MessageStore!
     var message: MessageEntity? {
         didSet {
-            print("message set: \(message?.text ?? "nil")")
-            messageText = message?.text ?? ""
-            messageDate = message?.date // ← ここでdateも保持
+            print("message set: \(String(describing: message?.attributedText))")
+            if let attrText = message?.attributedText as? NSAttributedString {
+                messageText = NSMutableAttributedString(attributedString: attrText)
+            } else {
+                messageText = NSMutableAttributedString(string: "")
+            }
+            messageDate = message?.date
         }
     }
 
-    var messageText: String = ""
+    var messageText: NSMutableAttributedString = NSMutableAttributedString(string: "")
     var messageDate: Date? // ← 追加
 
     let textView = UITextView()
@@ -27,7 +31,7 @@ class DetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print("選択されたUIViewController: message.text = \(message?.text ?? "nil")")
+        print("選択されたUIViewController: message.text = \((message?.attributedText as? NSAttributedString)?.string ?? "nil")")
 
         view.backgroundColor = .systemBackground
         title = "新規メッセージ"

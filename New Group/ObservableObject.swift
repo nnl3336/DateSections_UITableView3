@@ -25,13 +25,20 @@ class MessageStore: ObservableObject {
         fetchMessages()
     }
     
-    func updateMessage(_ message: MessageEntity, withText text: String) {
-        print("updateMessage called. old text: \(message.text ?? "nil"), new text: \(text)")
-        message.text = text
+    func updateMessage(_ message: MessageEntity, withAttributedText attributedText: NSMutableAttributedString) {
+        print("updateMessage called.")
+        
+        if let data = try? attributedText.data(
+            from: NSRange(location: 0, length: attributedText.length),
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]) {
+            message.attributedText = data
+        }
+        
         message.date = Date()
         CoreDataManager.shared.saveContext()
         fetchMessages()
     }
+
 
     func fetchMessages() {
         let request = NSFetchRequest<MessageEntity>(entityName: "MessageEntity")
@@ -44,23 +51,29 @@ class MessageStore: ObservableObject {
         print("fetchMessages!")
     }
 
-    func addMessage(_ text: String, selectedMessage: MessageEntity? = nil) {
+    func addMessage(_ attributedText: NSMutableAttributedString, selectedMessage: MessageEntity? = nil) {
         print("addMessage called. selectedMessage: \(String(describing: selectedMessage))")
+        
+        // NSAttributedString → Data に変換
+        let data = try? attributedText.data(
+            from: NSRange(location: 0, length: attributedText.length),
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd])
+        
         if let messageToUpdate = selectedMessage {
-            // 既存のメッセージを上書き
-            messageToUpdate.text = text
-            //messageToUpdate.date = selectedMessage?.date
-            // liked は変更しないか必要ならここで設定
+            messageToUpdate.attributedText = data  // Data? 型として代入
         } else {
-            // 新規作成
             let newMessage = MessageEntity(context: context)
-            newMessage.text = text
+            newMessage.attributedText = data       // Data? 型として代入
             newMessage.date = Date()
-            newMessage.liked = true  // 初期値セット
-            print("newMessage:\(newMessage)")
+            newMessage.liked = true
+            print("newMessage: \(newMessage)")
         }
+        
         CoreDataManager.shared.saveContext()
         fetchMessages()
     }
+
+
+
 
 }
