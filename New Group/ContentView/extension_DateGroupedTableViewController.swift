@@ -7,6 +7,281 @@
 
 import SwiftUI
 
+// MARK: - Setup
+
+extension DateGroupedTableViewController {
+    func updateToolbar() {
+            print("updateToolbar called, isSelecting = \(isSelecting)")
+            if isSelecting {
+                let transfer = UIBarButtonItem(title: "Transfer", style: .plain, target: self, action: #selector(transferTapped))
+                let like = UIBarButtonItem(title: "Like", style: .plain, target: self, action: #selector(likeTapped))
+                let cancel = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancelTapped))
+                let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+
+                setToolbarItems([transfer, flexible, like, flexible, cancel], animated: true)
+                navigationController?.setToolbarHidden(false, animated: true)
+            } else {
+                navigationController?.setToolbarHidden(true, animated: true)
+            }
+        }
+    
+    func setupTableView() {
+        view.addSubview(tableView)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+
+        tableView.register(CustomCell.self, forCellReuseIdentifier: "CustomCell")
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.allowsMultipleSelection = false
+    }
+
+    func setupNavigation() {
+        navigationController?.navigationBar.prefersLargeTitles = true
+        title = "メッセージ一覧"
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped)),
+            UIBarButtonItem(title: "選択", style: .plain, target: self, action: #selector(toggleSelectionMode))
+        ]
+    }
+
+    func setupToolbar() {
+        navigationController?.setToolbarHidden(true, animated: false)
+    }
+
+    func setupGesture() {
+        let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
+        tableView.addGestureRecognizer(longPressRecognizer)
+    }
+}
+
+// MARK: - UITableViewDataSource
+
+extension DateGroupedTableViewController: UITableViewDataSource {
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        groupedMessages.count
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        groupedMessages[section].messages.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+
+        let message = groupedMessages[indexPath.section].messages[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CustomCell", for: indexPath) as! CustomCell
+        cell.titleLabel.text = message.text
+        cell.subtitleLabel.text = "詳細テキストなど"
+        cell.iconView.image = UIImage(systemName: "message")
+        cell.updateLikeButton(isLiked: message.liked)
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        dateFormatter.string(from: groupedMessages[section].date)
+    }
+}
+
+// MARK: - UITableViewDelegate
+
+extension DateGroupedTableViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // 選択モード判定などの処理
+    }
+
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        // 選択解除の処理
+    }
+}
+
+// MARK: - Actions
+
+extension DateGroupedTableViewController {
+
+    @objc func likeTapped() {
+        guard !selectedMessages.isEmpty else { return }
+
+        let context = CoreDataManager.shared.context
+        let undoManager = context.undoManager ?? UndoManager()
+        context.undoManager = undoManager
+
+        var indexPathsToReload: [IndexPath] = []
+
+        for (sectionIndex, group) in groupedMessages.enumerated() {
+            for (rowIndex, message) in group.messages.enumerated() {
+                if selectedMessages.contains(where: { $0.id == message.id }) {
+                    undoManager.registerUndo(withTarget: message) { target in
+                        target.liked.toggle()
+                        CoreDataManager.shared.saveContext()
+                    }
+                    message.liked.toggle()
+                    indexPathsToReload.append(IndexPath(row: rowIndex, section: sectionIndex))
+                }
+            }
+        }
+
+        CoreDataManager.shared.saveContext()
+        tableView.reloadRows(at: indexPathsToReload, with: .none)
+
+        showToast(
+            message: "Liked 状態を変更しました",
+            undoAction: { [weak self] in
+                self?.undoTapped()
+            },
+            redoAction: { [weak self] in
+                self?.redoTapped()
+            }
+        )
+
+        selectedMessages.removeAll()
+        isSelecting = false
+    }
+    
+    @objc func cancelTapped() {
+        isSelecting = false
+        selectedMessages.removeAll()
+        tableView.reloadData()
+    }
+
+    @objc func addButtonTapped() {
+        // 詳細画面への遷移など
+    }
+
+    @objc func toggleSelectionMode() {
+        isSelecting.toggle()
+        tableView.allowsMultipleSelection = isSelecting
+        navigationItem.rightBarButtonItems?.last?.title = isSelecting ? "完了" : "選択"
+
+        if !isSelecting {
+            selectedMessages.removeAll()
+            for indexPath in tableView.indexPathsForSelectedRows ?? [] {
+                tableView.deselectRow(at: indexPath, animated: true)
+            }
+        }
+    }
+
+    @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
+        // 長押し処理
+    }
+
+    @objc func undoTapped() {
+        if let undoManager = CoreDataManager.shared.context.undoManager, undoManager.canUndo {
+            undoManager.undo()
+            CoreDataManager.shared.saveContext()
+            tableView.reloadData()
+            showToast(
+                message: "Undoを実行しました",
+                undoAction: { [weak self] in self?.undoTapped() },
+                redoAction: { [weak self] in self?.redoTapped() }
+            )
+        } else {
+            print("Undoできる操作がありません")
+        }
+    }
+
+    @objc func redoTapped() {
+        if let undoManager = CoreDataManager.shared.context.undoManager, undoManager.canRedo {
+            undoManager.redo()
+            CoreDataManager.shared.saveContext()
+            tableView.reloadData()
+            showToast(
+                message: "Redoを実行しました",
+                undoAction: { [weak self] in self?.undoTapped() },
+                redoAction: { [weak self] in self?.redoTapped() }
+            )
+        } else {
+            print("Redoできる操作がありません")
+        }
+    }
+}
+
+// MARK: - undo redo
+
+extension DateGroupedTableViewController {
+    
+    func showToast(message: String, undoAction: @escaping () -> Void, redoAction: @escaping () -> Void) {
+        let toastView = UIView()
+        toastView.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        toastView.layer.cornerRadius = 10
+        toastView.clipsToBounds = true
+        toastView.translatesAutoresizingMaskIntoConstraints = false
+        
+        let label = UILabel()
+        label.text = message
+        label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 14)
+        
+        let undoButton = UIButton(type: .system)
+        undoButton.setTitle("Undo", for: .normal)
+        undoButton.setTitleColor(.white, for: .normal)
+        undoButton.addAction(UIAction { _ in undoAction() }, for: .touchUpInside)
+        
+        let redoButton = UIButton(type: .system)
+        redoButton.setTitle("Redo", for: .normal)
+        redoButton.setTitleColor(.white, for: .normal)
+        redoButton.addAction(UIAction { _ in redoAction() }, for: .touchUpInside)
+        
+        let stack = UIStackView(arrangedSubviews: [label, undoButton, redoButton])
+        stack.axis = .horizontal
+        stack.spacing = 12
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        toastView.addSubview(stack)
+        
+        view.addSubview(toastView)
+        
+        NSLayoutConstraint.activate([
+            toastView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            toastView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            toastView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -32),
+            
+            stack.topAnchor.constraint(equalTo: toastView.topAnchor, constant: 12),
+            stack.bottomAnchor.constraint(equalTo: toastView.bottomAnchor, constant: -12),
+            stack.leadingAnchor.constraint(equalTo: toastView.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: toastView.trailingAnchor, constant: -16)
+        ])
+        
+        toastView.alpha = 0
+        UIView.animate(withDuration: 0.3) {
+            toastView.alpha = 1
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            UIView.animate(withDuration: 0.3, animations: {
+                toastView.alpha = 0
+            }, completion: { _ in
+                toastView.removeFromSuperview()
+            })
+        }
+        
+        //
+        
+        undoButton.addAction(UIAction { _ in
+            print("Undoボタンが押されました")
+            undoAction()
+        }, for: .touchUpInside)
+        
+        redoButton.addAction(UIAction { _ in
+            print("Redoボタンが押されました")
+            redoAction()
+        }, for: .touchUpInside)
+        
+    }
+    
+    @objc func transferTapped() {
+        // Transfer ロジックここに
+        print("Transfer tapped")
+    }
+}
+
+/*
+
 // MARK: - Selection Mode
 
 extension DateGroupedTableViewController {
@@ -270,12 +545,37 @@ extension UIViewController {
     }
     
     @objc func undoTapped() {
-        CoreDataManager.shared.context.undoManager?.undo()
-        CoreDataManager.shared.saveContext()
+        if let undoManager = CoreDataManager.shared.context.undoManager, undoManager.canUndo {
+            undoManager.undo()
+            CoreDataManager.shared.saveContext()
+            tableView.reloadData()
+
+            showToast(
+                message: "Undoを実行しました",
+                undoAction: { [weak self] in self?.undoTapped() },
+                redoAction: { [weak self] in self?.redoTapped() }
+            )
+        } else {
+            print("Undoできる操作がありません")
+        }
     }
 
+
     @objc func redoTapped() {
-        CoreDataManager.shared.context.undoManager?.redo()
-        CoreDataManager.shared.saveContext()
+        if let undoManager = CoreDataManager.shared.context.undoManager, undoManager.canRedo {
+            undoManager.redo()
+            CoreDataManager.shared.saveContext()
+            tableView.reloadData()
+
+            showToast(
+                message: "Redoを実行しました",
+                undoAction: { [weak self] in self?.undoTapped() },
+                redoAction: { [weak self] in self?.redoTapped() }
+            )
+        } else {
+            print("Redoできる操作がありません")
+        }
     }
+
 }
+*/

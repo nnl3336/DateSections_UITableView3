@@ -14,6 +14,7 @@
 		182164F02E3DBCB100563DFC /* TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164EF2E3DBCB100563DFC /* TextView.swift */; };
 		187818A12E3F4837000C988A /* extension_DateGroupedTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */; };
 		187818A52E3F77C1000C988A /* extension_TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A42E3F77C1000C988A /* extension_TextView.swift */; };
+		187818A82E408FBE000C988A /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A72E408FBE000C988A /* CustomCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,7 @@
 		182164EF2E3DBCB100563DFC /* TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextView.swift; sourceTree = "<group>"; };
 		187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_DateGroupedTableViewController.swift; sourceTree = "<group>"; };
 		187818A42E3F77C1000C988A /* extension_TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_TextView.swift; sourceTree = "<group>"; };
+		187818A72E408FBE000C988A /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -152,6 +154,7 @@
 			children = (
 				182164D02E3CA3AD00563DFC /* ContentView.swift */,
 				187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */,
+				187818A72E408FBE000C988A /* CustomCell.swift */,
 			);
 			path = ContentView;
 			sourceTree = "<group>";
@@ -306,6 +309,7 @@
 				182164E82E3DB9CB00563DFC /* DetailView.swift in Sources */,
 				182164E52E3DA91A00563DFC /* extension.swift in Sources */,
 				182164EA2E3DB9F100563DFC /* ObservableObject.swift in Sources */,
+				187818A82E408FBE000C988A /* CustomCell.swift in Sources */,
 				182164F02E3DBCB100563DFC /* TextView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
