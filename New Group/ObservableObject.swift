@@ -49,7 +49,7 @@ class MessageStore: ObservableObject {
         if let messageToUpdate = selectedMessage {
             // 既存のメッセージを上書き
             messageToUpdate.text = text
-            messageToUpdate.date = selectedMessage?.date
+            //messageToUpdate.date = selectedMessage?.date
             // liked は変更しないか必要ならここで設定
         } else {
             // 新規作成

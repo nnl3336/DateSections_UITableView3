@@ -80,8 +80,33 @@ class DateGroupedTableViewController: UIViewController {
             print("isSelecting will change to \(newValue)")
             isSelectingBinding?.wrappedValue = newValue
             updateToolbar()
+            
+            // 選択モードの切り替えに応じてtableViewの設定を変える
+            tableView.allowsMultipleSelection = newValue
+            
+            if !newValue {
+                // 選択解除を明示的に行う
+                if let selectedIndexPaths = tableView.indexPathsForSelectedRows {
+                    for indexPath in selectedIndexPaths {
+                        tableView.deselectRow(at: indexPath, animated: true)
+                    }
+                }
+                selectedMessages.removeAll()
+                tableView.reloadData() // 状態が変わるなら再描画もあり
+            }
         }
     }
+    
+    /*
+     var isSelecting: Bool {
+         get { isSelectingBinding?.wrappedValue ?? false }
+         set {
+             print("isSelecting will change to \(newValue)")
+             isSelectingBinding?.wrappedValue = newValue
+             updateToolbar()
+         }
+     }
+     */
 
     let dateFormatter: DateFormatter = {
         let df = DateFormatter()

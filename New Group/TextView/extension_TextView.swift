@@ -45,11 +45,13 @@ extension DetailViewController {
     @objc private func addButtonTapped() {
         //print("addButtonTapped: message.text = \(message?.text ?? "nil")")
         if let message = message {
+            print("Updating existing message: \(message)")
             store.updateMessage(message, withText: textView.text)
         } else {
+            print("Adding new message")
             store.addMessage(textView.text)
         }
-        store.fetchMessages()  // 最新データを取得し @Published messages を更新
+        //store.fetchMessages()  // 最新データを取得し @Published messages を更新
 
         dismiss(animated: true)
     }

@@ -91,6 +91,7 @@ extension DateGroupedTableViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 
 extension DateGroupedTableViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
         
