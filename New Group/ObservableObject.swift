@@ -14,6 +14,9 @@ class MessageStore: ObservableObject {
     @Published var selectedMessages: [MessageEntity] = []  // 追加！
 
     private let context = CoreDataManager.shared.context
+    
+    private var fetchedResultsController: NSFetchedResultsController<MessageEntity>!
+
 
     init() {
         fetchMessages()
@@ -39,6 +42,25 @@ class MessageStore: ObservableObject {
         fetchMessages()
     }
 
+    func setupFetchedResultsController() {
+        let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+
+        fetchedResultsController = NSFetchedResultsController(
+            fetchRequest: fetchRequest,
+            managedObjectContext: CoreDataManager.shared.context,
+            sectionNameKeyPath: nil,
+            cacheName: nil)
+
+        fetchedResultsController.delegate = self
+
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            print("Failed to fetch: \(error)")
+        }
+    }
+    
 
     func fetchMessages() {
         let request = NSFetchRequest<MessageEntity>(entityName: "MessageEntity")
@@ -47,7 +69,7 @@ class MessageStore: ObservableObject {
 
         DispatchQueue.main.async {
             self.messages = fetched
-            self.tableView.reloadData()  // これで画面が更新される
+            //self.tableView.reloadData()  // これで画面が更新される
         }
         print("fetchMessages!")
     }
