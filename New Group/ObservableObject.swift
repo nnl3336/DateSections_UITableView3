@@ -47,9 +47,11 @@ class MessageStore: ObservableObject {
 
         DispatchQueue.main.async {
             self.messages = fetched
+            self.tableView.reloadData()  // これで画面が更新される
         }
         print("fetchMessages!")
     }
+
 
     func addMessage(_ attributedText: NSMutableAttributedString, selectedMessage: MessageEntity? = nil) {
         print("addMessage called. selectedMessage: \(String(describing: selectedMessage))")

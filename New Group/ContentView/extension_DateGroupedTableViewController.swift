@@ -106,35 +106,30 @@ extension DateGroupedTableViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
-        
-        //print("タップされたmessage.text: \(message.text ?? "nil")")
-        
-        if let attrText = message.attributedText as? NSAttributedString, attrText.length > 0 {
-            // テキストの長さが0より大きい → 内容あり
-        } else {
-            // テキストの長さが0またはnil → 空
-            print("⚠️ テキストが空のメッセージです")
-        }
 
-        
         if isSelecting {
             selectedMessages.append(message)
-        } else { 
+        } else {
             let vc = DetailViewController()
-            vc.message = message  // ここで渡す
+            vc.message = message
             vc.store = store
             vc.messageDate = message.date
-            print("DetailViewController に message.text を渡します: \((vc.message?.attributedText as? NSAttributedString)?.string ?? "nil")")
+            
+            if let data = message.attributedText,
+               let attrString = try? NSAttributedString(
+                   data: data,
+                   options: [.documentType: NSAttributedString.DocumentType.rtfd],
+                   documentAttributes: nil) {
+                vc.messageText = NSMutableAttributedString(attributedString: attrString)
+            } else {
+                vc.messageText = NSMutableAttributedString(string: "")
+            }
+            
+            print("DetailViewController に message.text を渡します: \(vc.messageText.string)")
             navigationController?.pushViewController(vc, animated: true)
         }
-        
-        /*for group in groupedMessages {
-            for msg in group.messages {
-                print("grouped message.text: \(msg.text ?? "nil")")
-            }
-        }*/
-
     }
+
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
         guard isSelecting else { return }
