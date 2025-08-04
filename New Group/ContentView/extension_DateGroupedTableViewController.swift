@@ -92,11 +92,37 @@ extension DateGroupedTableViewController: UITableViewDataSource {
 
 extension DateGroupedTableViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // 選択モード判定などの処理
+        let message = groupedMessages[indexPath.section].messages[indexPath.row]
+        
+        //print("タップされたmessage.text: \(message.text ?? "nil")")
+        
+        if (message.text ?? "").isEmpty {
+            //print("⚠️ テキストが空のメッセージです")
+        }
+        
+        if isSelecting {
+            selectedMessages.append(message)
+        } else {
+            let vc = DetailViewController()
+            vc.message = message  // ここで渡す
+            vc.store = store
+            vc.messageDate = message.date
+            print("DetailViewController に message.text を渡します: \(vc.message?.text ?? "nil")")
+            navigationController?.pushViewController(vc, animated: true)
+        }
+        
+        /*for group in groupedMessages {
+            for msg in group.messages {
+                print("grouped message.text: \(msg.text ?? "nil")")
+            }
+        }*/
+
     }
 
     func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
-        // 選択解除の処理
+        guard isSelecting else { return }
+        let message = groupedMessages[indexPath.section].messages[indexPath.row]
+        selectedMessages.removeAll { $0.id == message.id }
     }
 }
 
@@ -150,7 +176,9 @@ extension DateGroupedTableViewController {
     }
 
     @objc func addButtonTapped() {
-        // 詳細画面への遷移など
+        let detailVC = DetailViewController()
+        detailVC.store = MessageStore()
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 
     @objc func toggleSelectionMode() {
@@ -167,8 +195,37 @@ extension DateGroupedTableViewController {
     }
 
     @objc func handleLongPress(_ gestureRecognizer: UILongPressGestureRecognizer) {
-        // 長押し処理
+        guard gestureRecognizer.state == .began else { return }
+
+        let point = gestureRecognizer.location(in: tableView)
+        guard let indexPath = tableView.indexPathForRow(at: point) else { return }
+
+        if !isSelecting {
+            isSelecting = true
+            // 選択モード入りと allowsMultipleSelection の切り替えを
+            // メインスレッドの次のループに遅らせる
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.tableView.allowsMultipleSelection = true
+                self.navigationItem.rightBarButtonItem?.title = "完了"
+
+                // 遅延して選択処理
+                self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
+                let message = self.groupedMessages[indexPath.section].messages[indexPath.row]
+                if !self.selectedMessages.contains(where: { $0.id == message.id }) {
+                    self.selectedMessages.append(message)
+                }
+            }
+        } else {
+            // すでに選択モードなら即選択
+            tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
+            let message = groupedMessages[indexPath.section].messages[indexPath.row]
+            if !selectedMessages.contains(where: { $0.id == message.id }) {
+                selectedMessages.append(message)
+            }
+        }
     }
+    
 
     @objc func undoTapped() {
         if let undoManager = CoreDataManager.shared.context.undoManager, undoManager.canUndo {
