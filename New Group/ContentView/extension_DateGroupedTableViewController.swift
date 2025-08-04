@@ -103,7 +103,7 @@ extension DateGroupedTableViewController: UITableViewDelegate {
         
         if isSelecting {
             selectedMessages.append(message)
-        } else {
+        } else { 
             let vc = DetailViewController()
             vc.message = message  // ここで渡す
             vc.store = store
