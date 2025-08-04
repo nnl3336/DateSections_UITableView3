@@ -43,15 +43,17 @@ extension DetailViewController {
 extension DetailViewController {
 
     @objc private func addButtonTapped() {
+        //print("addButtonTapped: message.text = \(message?.text ?? "nil")")
         if let message = message {
-            // 既存のメッセージを更新
             store.updateMessage(message, withText: textView.text)
         } else {
-            // 新規メッセージ作成
             store.addMessage(textView.text)
         }
+        store.fetchMessages()  // 最新データを取得し @Published messages を更新
+
         dismiss(animated: true)
     }
+
 }
 
 // MARK: - UITextViewDelegate

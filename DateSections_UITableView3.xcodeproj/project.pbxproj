@@ -114,8 +114,8 @@
 		182164E62E3DB9B500563DFC /* New Group */ = {
 			isa = PBXGroup;
 			children = (
-				187818A62E3F821C000C988A /* ContentView */,
 				187818A32E3F7769000C988A /* TextView */,
+				187818A62E3F821C000C988A /* ContentView */,
 				1878189F2E3F480A000C988A /* extension */,
 				182164E92E3DB9F100563DFC /* ObservableObject.swift */,
 			);

@@ -12,10 +12,14 @@ class DetailViewController: UIViewController {
     var store: MessageStore!
     var message: MessageEntity? {
         didSet {
+            print("message set: \(message?.text ?? "nil")")
             messageText = message?.text ?? ""
+            messageDate = message?.date // ← ここでdateも保持
         }
     }
+
     var messageText: String = ""
+    var messageDate: Date? // ← 追加
 
     let textView = UITextView()
     let addButton = UIButton(type: .system)

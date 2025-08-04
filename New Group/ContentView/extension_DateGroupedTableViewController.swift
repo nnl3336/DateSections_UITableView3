@@ -55,7 +55,6 @@ extension DateGroupedTableViewController {
     }
 }
 
-
 // MARK: - Actions
 
 extension DateGroupedTableViewController {
@@ -95,7 +94,15 @@ extension DateGroupedTableViewController {
         CoreDataManager.shared.saveContext()
         tableView.reloadRows(at: indexPathsToReload, with: .none)
 
-        showToast(message: "Liked 状態を変更しました")
+        showToast(
+            message: "Liked 状態を変更しました",
+            undoAction: { [weak self] in
+                self?.undoTapped()
+            },
+            redoAction: { [weak self] in
+                self?.redoTapped()
+            }
+        )
 
         selectedMessages.removeAll()
         isSelecting = false
@@ -106,17 +113,6 @@ extension DateGroupedTableViewController {
         selectedMessages.removeAll()
         tableView.reloadData()
     }
-    
-    @objc func undoTapped() {
-        CoreDataManager.shared.context.undoManager?.undo()
-        CoreDataManager.shared.saveContext()
-    }
-
-    @objc func redoTapped() {
-        CoreDataManager.shared.context.undoManager?.redo()
-        CoreDataManager.shared.saveContext()
-    }
-
     
     func updateToolbar() {
         print("updateToolbar called, isSelecting = \(isSelecting)")
@@ -135,13 +131,17 @@ extension DateGroupedTableViewController {
 
 }
 
-
 // MARK: - UITableView Delegate
 
 extension DateGroupedTableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
-        print("選択されたmessage.text = \(message.text ?? "nil")")
+        
+        //print("タップされたmessage.text: \(message.text ?? "nil")")
+        
+        if (message.text ?? "").isEmpty {
+            //print("⚠️ テキストが空のメッセージです")
+        }
         
         if isSelecting {
             selectedMessages.append(message)
@@ -149,9 +149,17 @@ extension DateGroupedTableViewController {
             let vc = DetailViewController()
             vc.message = message  // ここで渡す
             vc.store = store
+            vc.messageDate = message.date
             print("DetailViewController に message.text を渡します: \(vc.message?.text ?? "nil")")
             navigationController?.pushViewController(vc, animated: true)
         }
+        
+        /*for group in groupedMessages {
+            for msg in group.messages {
+                print("grouped message.text: \(msg.text ?? "nil")")
+            }
+        }*/
+
     }
 
     override func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
@@ -186,5 +194,88 @@ extension DateGroupedTableViewController {
 
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         dateFormatter.string(from: groupedMessages[section].date)
+    }
+}
+
+// MARK: - undo redo
+
+extension UIViewController {
+    func showToast(message: String, undoAction: @escaping () -> Void, redoAction: @escaping () -> Void) {
+        let toastView = UIView()
+        toastView.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        toastView.layer.cornerRadius = 10
+        toastView.clipsToBounds = true
+        toastView.translatesAutoresizingMaskIntoConstraints = false
+
+        let label = UILabel()
+        label.text = message
+        label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 14)
+        
+        let undoButton = UIButton(type: .system)
+        undoButton.setTitle("Undo", for: .normal)
+        undoButton.setTitleColor(.white, for: .normal)
+        undoButton.addAction(UIAction { _ in undoAction() }, for: .touchUpInside)
+
+        let redoButton = UIButton(type: .system)
+        redoButton.setTitle("Redo", for: .normal)
+        redoButton.setTitleColor(.white, for: .normal)
+        redoButton.addAction(UIAction { _ in redoAction() }, for: .touchUpInside)
+
+        let stack = UIStackView(arrangedSubviews: [label, undoButton, redoButton])
+        stack.axis = .horizontal
+        stack.spacing = 12
+        stack.alignment = .center
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        toastView.addSubview(stack)
+
+        view.addSubview(toastView)
+
+        NSLayoutConstraint.activate([
+            toastView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            toastView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            toastView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -32),
+
+            stack.topAnchor.constraint(equalTo: toastView.topAnchor, constant: 12),
+            stack.bottomAnchor.constraint(equalTo: toastView.bottomAnchor, constant: -12),
+            stack.leadingAnchor.constraint(equalTo: toastView.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: toastView.trailingAnchor, constant: -16)
+        ])
+
+        toastView.alpha = 0
+        UIView.animate(withDuration: 0.3) {
+            toastView.alpha = 1
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            UIView.animate(withDuration: 0.3, animations: {
+                toastView.alpha = 0
+            }, completion: { _ in
+                toastView.removeFromSuperview()
+            })
+        }
+        
+        //
+        
+        undoButton.addAction(UIAction { _ in
+            print("Undoボタンが押されました")
+            undoAction()
+        }, for: .touchUpInside)
+
+        redoButton.addAction(UIAction { _ in
+            print("Redoボタンが押されました")
+            redoAction()
+        }, for: .touchUpInside)
+
+    }
+    
+    @objc func undoTapped() {
+        CoreDataManager.shared.context.undoManager?.undo()
+        CoreDataManager.shared.saveContext()
+    }
+
+    @objc func redoTapped() {
+        CoreDataManager.shared.context.undoManager?.redo()
+        CoreDataManager.shared.saveContext()
     }
 }
