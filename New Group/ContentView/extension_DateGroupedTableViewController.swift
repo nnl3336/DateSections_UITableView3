@@ -76,16 +76,24 @@ extension DateGroupedTableViewController: UITableViewDataSource {
 
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "CustomCell", for: indexPath) as! CustomCell
-        if let attrText = message.attributedText as? NSAttributedString {
+
+        // Data → NSAttributedString → string
+        if let data = message.attributedText,
+           let attrText = try? NSAttributedString(
+               data: data,
+               options: [.documentType: NSAttributedString.DocumentType.rtfd],
+               documentAttributes: nil) {
             cell.titleLabel.text = attrText.string
         } else {
             cell.titleLabel.text = ""
         }
+
         cell.subtitleLabel.text = "詳細テキストなど"
         cell.iconView.image = UIImage(systemName: "message")
         cell.updateLikeButton(isLiked: message.liked)
         return cell
     }
+    
 
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         dateFormatter.string(from: groupedMessages[section].date)

@@ -120,6 +120,8 @@ class DateGroupedTableViewController: UIViewController {
         setupNavigation()
         setupToolbar()
         setupGesture()
+        
+        
     }
 }
 
