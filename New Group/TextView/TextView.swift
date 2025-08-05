@@ -36,6 +36,9 @@ class DetailViewController: UIViewController {
     /*var undoTimer: Timer?
     
     var isUndoGrouping = false*/
+    
+    var backButton: UIBarButtonItem!
+    var redoButton: UIBarButtonItem!
 
     //***
 
@@ -62,6 +65,28 @@ class DetailViewController: UIViewController {
         
         textView.delegate = self
         textView.becomeFirstResponder()
+        
+        //
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateUndoRedoButtons),
+            name: .NSUndoManagerDidUndoChange,
+            object: textView.undoManager
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateUndoRedoButtons),
+            name: .NSUndoManagerDidRedoChange,
+            object: textView.undoManager
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateUndoRedoButtons),
+            name: .NSUndoManagerWillCloseUndoGroup,
+            object: textView.undoManager
+        )
+        
+        updateUndoRedoButtons()
     }
     
     //***

@@ -16,7 +16,7 @@ extension DetailViewController {
             let toolbar = UIToolbar()
             toolbar.sizeToFit()
 
-            let backButton = UIBarButtonItem(
+            backButton = UIBarButtonItem(
                 image: UIImage(systemName: "arrow.uturn.backward"),
                 style: .plain,
                 target: self,
@@ -24,13 +24,15 @@ extension DetailViewController {
             )
             backButton.tintColor = ep_accentColor.currentColor.uiColor
 
-            let redoButton = UIBarButtonItem(
+            redoButton = UIBarButtonItem(
                 image: UIImage(systemName: "arrow.uturn.forward"),
                 style: .plain,
                 target: self,
                 action: #selector(self.performRedo)
             )
             redoButton.tintColor = ep_accentColor.currentColor.uiColor
+        
+        //
 
             let saveButton = UIBarButtonItem(
                 image: UIImage(systemName: "tray.and.arrow.down"),
@@ -198,6 +200,31 @@ extension DetailViewController {
 // MARK: - Actions
 
 extension DetailViewController {
+    
+    //undo
+    
+    @objc func updateUndoRedoButtons() {
+        backButton.isEnabled = textView.undoManager?.canUndo ?? false
+        redoButton.isEnabled = textView.undoManager?.canRedo ?? false
+    }
+    
+    @objc func performUndo() {
+        print("Undo performed")
+        
+        if let undoManager = textView.undoManager, undoManager.canUndo {
+            undoManager.undo()
+        }
+    }
+
+    @objc func performRedo() {
+        print("Redo performed")
+
+        if let undoManager = textView.undoManager, undoManager.canRedo {
+            undoManager.redo()
+        }
+    }
+    
+    //add
 
     @objc private func addButtonTapped() {
         if let message = message {
@@ -229,24 +256,8 @@ extension DetailViewController {
 
 // MARK: - Undo
 
-extension DetailViewController {
-    
-    @objc func performUndo() {
-        print("Undo performed")
-        
-        if let undoManager = textView.undoManager, undoManager.canUndo {
-            undoManager.undo()
-        }
-    }
-
-    @objc func performRedo() {
-        print("Redo performed")
-
-        if let undoManager = textView.undoManager, undoManager.canRedo {
-            undoManager.redo()
-        }
-    }
-}
+/*extension DetailViewController {
+}*/
 
 // MARK: - UITextViewDelegate
 
