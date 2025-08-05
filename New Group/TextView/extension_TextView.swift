@@ -141,6 +141,7 @@ extension DetailViewController {
 // MARK: - NavigationBar
 
 extension DetailViewController {
+    
     func setupNavigationBar() {
         // 左の戻るボタン（custom）
         navigationItem.leftBarButtonItem = UIBarButtonItem(
@@ -250,10 +251,46 @@ extension DetailViewController {
 
 extension DetailViewController {
     
+    // MARK: - 
+    
     func handleSelectedImages(_ images: [UIImage]) {
-        // 画像を表示したり、保存したりなど処理を書く
         print("画像が選択されました: \(images.count) 枚")
+        for image in images {
+            addImageToTextView(image)
+        }
     }
+
+    private func addImageToTextView(_ image: UIImage) {
+        let attachment = NSTextAttachment()
+        attachment.image = image
+
+        // オプション：サイズ調整（例：幅をtextViewの幅に合わせる）
+        let maxWidth = textView.frame.width - 20
+        if let img = attachment.image, img.size.width > 0 {
+            let scale = maxWidth / img.size.width
+            attachment.bounds = CGRect(x: 0, y: 0, width: img.size.width * scale, height: img.size.height * scale)
+        }
+
+        let attributedImage = NSAttributedString(attachment: attachment)
+
+        // 現在のカーソル位置に挿入
+        if let selectedRange = textView.selectedTextRange {
+            let cursorPosition = textView.offset(from: textView.beginningOfDocument, to: selectedRange.start)
+            let mutableAttrText = NSMutableAttributedString(attributedString: textView.attributedText)
+            mutableAttrText.insert(attributedImage, at: cursorPosition)
+            textView.attributedText = mutableAttrText
+
+            // カーソル位置を画像の後ろに移動
+            if let newPosition = textView.position(from: selectedRange.start, offset: 1) {
+                textView.selectedTextRange = textView.textRange(from: newPosition, to: newPosition)
+            }
+        } else {
+            // 範囲がない場合、末尾に追加
+            textView.textStorage.append(attributedImage)
+        }
+    }
+
+    // MARK: - 
     
     @objc func newPost() {
         print("newPost")
