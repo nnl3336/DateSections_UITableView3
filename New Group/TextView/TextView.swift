@@ -27,21 +27,44 @@ class DetailViewController: UIViewController {
 
     let textView = UITextView()
     let addButton = UIButton(type: .system)
+    
+    var coordinator: DetailViewCoordinator!
+    
+    let ep_accentColor = AccentColorManager.shared
+    
+    //var undoManager: UndoManager?
+    /*var undoTimer: Timer?
+    
+    var isUndoGrouping = false*/
+
+    //***
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         print("選択されたUIViewController: message.text = \((message?.attributedText as? NSAttributedString)?.string ?? "nil")")
-
+        
         view.backgroundColor = .systemBackground
         title = "新規メッセージ"
-
+        
         setupTextView()
         setupButton()
         setupLayout()
+        setupNavigationBar()
         setupToolbar()  // ← ここで追加
-
+        
+        coordinator = DetailViewCoordinator(viewController: self)
+        
+        // ここで toolbar 作成する時に coordinator を使う
+        let toolbar = makeKeyboardToolbar1()
+        // toolbar を textView.inputAccessoryView などに設定
+        textView.inputAccessoryView = toolbar
+        
+        textView.delegate = self
+        textView.becomeFirstResponder()
     }
+    
+    //***
 }
 
 

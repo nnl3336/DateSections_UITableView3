@@ -8,6 +8,47 @@
 import SwiftUI
 import CoreData
 
+// MARK: - Color 
+
+class AccentColorManager {
+    static let shared = AccentColorManager()
+
+    private let userDefaultsKey = "isAC"
+
+    enum AccentColorEnum: String {
+        case blue, red, green, yellow
+
+        var uiColor: UIColor {
+            switch self {
+            case .blue: return .systemBlue
+            case .red: return .systemRed
+            case .green: return .systemGreen
+            case .yellow: return .systemYellow
+            }
+        }
+    }
+
+    private(set) var currentColor: AccentColorEnum = .blue
+
+    private init() {
+        loadColor()
+    }
+
+    func loadColor() {
+        if let rawValue = UserDefaults.standard.string(forKey: userDefaultsKey),
+           let color = AccentColorEnum(rawValue: rawValue) {
+            currentColor = color
+        }
+    }
+
+    func saveColor(_ color: AccentColorEnum) {
+        currentColor = color
+        UserDefaults.standard.set(color.rawValue, forKey: userDefaultsKey)
+    }
+}
+
+// MARK: - Message
+
 class MessageStore: NSObject, ObservableObject, NSFetchedResultsControllerDelegate {
     @Published var messages: [MessageEntity] = []
     @Published var selectedMessage: MessageEntity?

@@ -7,6 +7,86 @@
 
 import SwiftUI
 
+// MARK: - KeyboardBar
+
+extension DetailViewController {
+
+    func makeKeyboardToolbar1() -> UIToolbar {
+            let ep_accentColor = AccentColorManager.shared
+            let toolbar = UIToolbar()
+            toolbar.sizeToFit()
+
+            let backButton = UIBarButtonItem(
+                image: UIImage(systemName: "arrow.uturn.backward"),
+                style: .plain,
+                target: self,
+                action: #selector(self.performUndo)
+            )
+            backButton.tintColor = ep_accentColor.currentColor.uiColor
+
+            let redoButton = UIBarButtonItem(
+                image: UIImage(systemName: "arrow.uturn.forward"),
+                style: .plain,
+                target: self,
+                action: #selector(self.performRedo)
+            )
+            redoButton.tintColor = ep_accentColor.currentColor.uiColor
+
+            let saveButton = UIBarButtonItem(
+                image: UIImage(systemName: "tray.and.arrow.down"),
+                style: .plain,
+                target: coordinator,
+                action: #selector(DetailViewCoordinator.saveText)
+            )
+            saveButton.tintColor = ep_accentColor.currentColor.uiColor
+
+            let photoButton = UIBarButtonItem(
+                image: UIImage(systemName: "photo"),
+                style: .plain,
+                target: coordinator,
+                action: #selector(DetailViewCoordinator.showImagePicker)
+            )
+            photoButton.tintColor = ep_accentColor.currentColor.uiColor
+
+            let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+
+            let flexibleSpace2 = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+            flexibleSpace2.width = 3
+
+            toolbar.items = [
+                backButton,
+                redoButton,
+                flexibleSpace2,
+                saveButton,
+            ]
+
+            return toolbar
+        }}
+
+// MARK: - Support
+
+extension DetailViewController {
+    func formattedDate() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd"
+        return formatter.string(from: Date())
+    }
+
+    func formattedDate2() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: Date())
+    }
+
+    @objc func backButtonTapped() {
+        navigationController?.popViewController(animated: true)
+    }
+
+    @objc func newButtonTapped() {
+        print("📝 新規作成タップ")
+    }
+}
+
 // MARK: - NavigationBar
 
 extension DetailViewController {
@@ -46,7 +126,7 @@ extension DetailViewController {
 
 }
 
-// MARK: - toolbar
+// MARK: - Toolbar
 
 extension DetailViewController {
     
@@ -81,6 +161,8 @@ extension DetailViewController {
     }
 
 }
+
+///
 
 // MARK: - Setup UI
 
@@ -145,10 +227,61 @@ extension DetailViewController {
 
 }
 
+// MARK: - Undo
+
+extension DetailViewController {
+    
+    @objc func performUndo() {
+        print("Undo performed")
+        
+        if let undoManager = textView.undoManager, undoManager.canUndo {
+            undoManager.undo()
+        }
+    }
+
+    @objc func performRedo() {
+        print("Redo performed")
+
+        if let undoManager = textView.undoManager, undoManager.canRedo {
+            undoManager.redo()
+        }
+    }
+}
+
 // MARK: - UITextViewDelegate
 
 extension DetailViewController: UITextViewDelegate {
+    
     func textViewDidChange(_ textView: UITextView) {
         messageText = NSMutableAttributedString(attributedString: textView.attributedText)
     }
+
+    /*func textViewDidBeginEditing(_ textView: UITextView) {
+        undoManager?.beginUndoGrouping()
+    }
+
+    func textViewDidChange(_ textView: UITextView) {
+        if !isUndoGrouping {
+            textView.undoManager?.beginUndoGrouping()
+            isUndoGrouping = true
+        }
+
+        undoTimer?.invalidate()
+        undoTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            if self.isUndoGrouping {
+                textView.undoManager?.endUndoGrouping()
+                self.isUndoGrouping = false
+            }
+        }
+    }
+
+    func textViewDidEndEditing(_ textView: UITextView) {
+        undoTimer?.invalidate()
+        // 入力終了時にグループが開いているなら閉じる
+        if let undoManager = undoManager, undoManager.isUndoRegistrationEnabled {
+            undoManager.endUndoGrouping()
+        }
+    }*/
 }
+

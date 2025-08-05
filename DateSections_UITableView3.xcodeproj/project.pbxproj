@@ -12,7 +12,9 @@
 		182164E82E3DB9CB00563DFC /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164E72E3DB9CB00563DFC /* DetailView.swift */; };
 		182164EA2E3DB9F100563DFC /* ObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164E92E3DB9F100563DFC /* ObservableObject.swift */; };
 		182164F02E3DBCB100563DFC /* TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 182164EF2E3DBCB100563DFC /* TextView.swift */; };
-		187818A12E3F4837000C988A /* extension_DateGroupedTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */; };
+		1870D1922E41A56500A09218 /* ObservableObject 2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1870D1912E41A56500A09218 /* ObservableObject 2.swift */; };
+		1870D1942E41A9F000A09218 /* Coordinator_TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1870D1932E41A9F000A09218 /* Coordinator_TextView.swift */; };
+		187818A12E3F4837000C988A /* extension_TableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A02E3F4837000C988A /* extension_TableView.swift */; };
 		187818A52E3F77C1000C988A /* extension_TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A42E3F77C1000C988A /* extension_TextView.swift */; };
 		187818A82E408FBE000C988A /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A72E408FBE000C988A /* CustomCell.swift */; };
 /* End PBXBuildFile section */
@@ -43,7 +45,9 @@
 		182164E72E3DB9CB00563DFC /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		182164E92E3DB9F100563DFC /* ObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObject.swift; sourceTree = "<group>"; };
 		182164EF2E3DBCB100563DFC /* TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextView.swift; sourceTree = "<group>"; };
-		187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_DateGroupedTableViewController.swift; sourceTree = "<group>"; };
+		1870D1912E41A56500A09218 /* ObservableObject 2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ObservableObject 2.swift"; sourceTree = "<group>"; };
+		1870D1932E41A9F000A09218 /* Coordinator_TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinator_TextView.swift; sourceTree = "<group>"; };
+		187818A02E3F4837000C988A /* extension_TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_TableView.swift; sourceTree = "<group>"; };
 		187818A42E3F77C1000C988A /* extension_TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_TextView.swift; sourceTree = "<group>"; };
 		187818A72E408FBE000C988A /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -136,6 +140,7 @@
 			isa = PBXGroup;
 			children = (
 				182164E72E3DB9CB00563DFC /* DetailView.swift */,
+				1870D1912E41A56500A09218 /* ObservableObject 2.swift */,
 			);
 			path = "-";
 			sourceTree = "<group>";
@@ -145,6 +150,7 @@
 			children = (
 				182164EF2E3DBCB100563DFC /* TextView.swift */,
 				187818A42E3F77C1000C988A /* extension_TextView.swift */,
+				1870D1932E41A9F000A09218 /* Coordinator_TextView.swift */,
 			);
 			path = TextView;
 			sourceTree = "<group>";
@@ -153,7 +159,7 @@
 			isa = PBXGroup;
 			children = (
 				182164D02E3CA3AD00563DFC /* ContentView.swift */,
-				187818A02E3F4837000C988A /* extension_DateGroupedTableViewController.swift */,
+				187818A02E3F4837000C988A /* extension_TableView.swift */,
 				187818A72E408FBE000C988A /* CustomCell.swift */,
 			);
 			path = ContentView;
@@ -303,13 +309,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				187818A12E3F4837000C988A /* extension_DateGroupedTableViewController.swift in Sources */,
+				187818A12E3F4837000C988A /* extension_TableView.swift in Sources */,
 				182164D62E3CA3AD00563DFC /* ContentView.swift in Sources */,
 				187818A52E3F77C1000C988A /* extension_TextView.swift in Sources */,
 				182164E82E3DB9CB00563DFC /* DetailView.swift in Sources */,
 				182164E52E3DA91A00563DFC /* extension.swift in Sources */,
 				182164EA2E3DB9F100563DFC /* ObservableObject.swift in Sources */,
 				187818A82E408FBE000C988A /* CustomCell.swift in Sources */,
+				1870D1922E41A56500A09218 /* ObservableObject 2.swift in Sources */,
+				1870D1942E41A9F000A09218 /* Coordinator_TextView.swift in Sources */,
 				182164F02E3DBCB100563DFC /* TextView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
