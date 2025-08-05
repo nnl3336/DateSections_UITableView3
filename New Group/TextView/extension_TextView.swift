@@ -7,6 +7,81 @@
 
 import SwiftUI
 
+// MARK: - NavigationBar
+
+extension DetailViewController {
+    func setupNavigationBar() {
+        // 左の戻るボタン（custom）
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "chevron.left"),
+            style: .plain,
+            target: self,
+            action: #selector(backButtonTapped)
+        )
+
+        // 右のメニューと pencil ボタン
+        let menu = UIMenu(title: "", children: [
+            UIAction(title: "History", image: UIImage(systemName: "clock")) { _ in
+                print("History tapped")
+            },
+            UIAction(title: "Search Text", image: UIImage(systemName: "magnifyingglass")) { _ in
+                print("Search tapped")
+            },
+            UIAction(title: "Trash", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                print("Trash tapped")
+            }
+        ])
+
+        let menuButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu)
+
+        let newButton = UIBarButtonItem(
+            image: UIImage(systemName: "square.and.pencil"),
+            style: .plain,
+            target: self,
+            action: #selector(newButtonTapped)
+        )
+
+        navigationItem.rightBarButtonItems = [newButton, menuButton]
+    }
+
+}
+
+// MARK: - toolbar
+
+extension DetailViewController {
+    
+    func setupToolbar() {
+        let toolbar = UIToolbar()
+        toolbar.translatesAutoresizingMaskIntoConstraints = false
+
+        let dateLabel = UILabel()
+        dateLabel.numberOfLines = 2
+        dateLabel.textAlignment = .center
+        dateLabel.text = "Date: \(formattedDate())\n\(formattedDate2())"
+
+        let labelItem = UIBarButtonItem(customView: dateLabel)
+        let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+
+        let pencilItem = UIBarButtonItem(
+            image: UIImage(systemName: "square.and.pencil"),
+            style: .plain,
+            target: self,
+            action: #selector(newButtonTapped)
+        )
+
+        toolbar.setItems([flexible, labelItem, flexible, pencilItem], animated: false)
+
+        view.addSubview(toolbar)
+
+        NSLayoutConstraint.activate([
+            toolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            toolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            toolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        ])
+    }
+
+}
+
 // MARK: - Setup UI
 
 extension DetailViewController {

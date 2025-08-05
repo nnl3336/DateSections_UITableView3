@@ -39,6 +39,8 @@ class DetailViewController: UIViewController {
         setupTextView()
         setupButton()
         setupLayout()
+        setupToolbar()  // ← ここで追加
+
     }
 }
 
