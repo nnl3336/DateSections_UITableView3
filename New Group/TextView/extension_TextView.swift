@@ -10,60 +10,109 @@ import SwiftUI
 // MARK: - KeyboardBar
 
 extension DetailViewController {
-
+    
     func makeKeyboardToolbar1() -> UIToolbar {
-            let ep_accentColor = AccentColorManager.shared
-            let toolbar = UIToolbar()
-            toolbar.sizeToFit()
-
-            backButton = UIBarButtonItem(
-                image: UIImage(systemName: "arrow.uturn.backward"),
-                style: .plain,
-                target: self,
-                action: #selector(self.performUndo)
-            )
-            backButton.tintColor = ep_accentColor.currentColor.uiColor
-
-            redoButton = UIBarButtonItem(
-                image: UIImage(systemName: "arrow.uturn.forward"),
-                style: .plain,
-                target: self,
-                action: #selector(self.performRedo)
-            )
-            redoButton.tintColor = ep_accentColor.currentColor.uiColor
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        let acColor = AccentColorManager.shared.currentColor.uiColor
+        
+        backButton = UIBarButtonItem(
+            image: UIImage(systemName: "arrow.uturn.backward"),
+            style: .plain,
+            target: self,
+            action: #selector(self.performUndo)
+        )
+        backButton.tintColor = acColor
+        
+        redoButton = UIBarButtonItem(
+            image: UIImage(systemName: "arrow.uturn.forward"),
+            style: .plain,
+            target: self,
+            action: #selector(self.performRedo)
+        )
+        redoButton.tintColor = acColor
         
         //
-
-            let saveButton = UIBarButtonItem(
-                image: UIImage(systemName: "tray.and.arrow.down"),
-                style: .plain,
-                target: coordinator,
-                action: #selector(DetailViewCoordinator.saveText)
-            )
-            saveButton.tintColor = ep_accentColor.currentColor.uiColor
-
-            let photoButton = UIBarButtonItem(
-                image: UIImage(systemName: "photo"),
-                style: .plain,
-                target: coordinator,
-                action: #selector(DetailViewCoordinator.showImagePicker)
-            )
-            photoButton.tintColor = ep_accentColor.currentColor.uiColor
-
-            let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-
-            let flexibleSpace2 = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-            flexibleSpace2.width = 3
-
-            toolbar.items = [
-                backButton,
-                redoButton,
-                flexibleSpace2,
-                saveButton,
-            ]
-
-            return toolbar
-        }}
+        
+        saveButton = UIBarButtonItem(
+            image: UIImage(systemName: "tray.and.arrow.down"),
+            style: .plain,
+            target: self,
+            action: #selector(self.saveText)
+        )
+        saveButton.tintColor = acColor
+        
+        //
+        
+        photoButton = UIBarButtonItem(
+            image: UIImage(systemName: "photo"),
+            style: .plain,
+            target: coordinator,
+            action: #selector(coordinator.showImagePicker)
+        )
+        photoButton.tintColor = acColor
+        
+        //
+        
+        buttonLike = UIBarButtonItem(
+            image: UIImage(systemName: ep_textView.selectLiked ? "heart.fill" : "heart"),
+            style: .plain,
+            target: self,
+            action: #selector(self.toggleLike)
+        )
+        buttonLike.tintColor = acColor
+        
+        buttonCheck = UIBarButtonItem(
+            image: UIImage(systemName: ep_textView.selectCheck ? "checkmark.circle.fill" : "checkmark.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(self.toggleCheck)
+        )
+        buttonCheck.tintColor = acColor
+        
+        //
+        
+        buttonCopy = UIBarButtonItem(
+            image: UIImage(systemName: "doc.on.doc"),
+            style: .plain,
+            target: self,
+            action: #selector(self.copyText)
+        )
+        buttonCopy.tintColor = acColor
+        
+        newPostButton = UIBarButtonItem(
+            image: UIImage(systemName: "square.and.pencil"),
+            style: .plain,
+            target: coordinator,
+            action: #selector(self.newPost)
+        )
+        newPostButton.tintColor = acColor
+        //newPostButton.isEnabled = ep_item.item != nil
+        
+        //coordinator.newPostButton = newPostButton
+        
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let flexibleSpace2 = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        flexibleSpace2.width = 3
+        
+        toolbar.items = [
+            backButton,
+            redoButton,
+            flexibleSpace2,
+            saveButton,
+            flexibleSpace2,
+            buttonCheck,
+            buttonLike,
+            buttonCopy,
+            photoButton,
+            flexibleSpace2,
+            newPostButton
+        ]
+        
+        return toolbar
+    }
+}
 
 // MARK: - Support
 
@@ -200,6 +249,47 @@ extension DetailViewController {
 // MARK: - Actions
 
 extension DetailViewController {
+    
+    func handleSelectedImages(_ images: [UIImage]) {
+        // 画像を表示したり、保存したりなど処理を書く
+        print("画像が選択されました: \(images.count) 枚")
+    }
+    
+    @objc func newPost() {
+        print("newPost")
+    }
+    
+    @objc func saveText() {
+        print("Save text action")
+    }
+
+    @objc func showImagePicker() {
+        print("Show image picker")
+    }
+
+    @objc func toggleLike() {
+        print("Toggle like ViewController")
+        ep_textView.selectLiked.toggle()
+        buttonLike.image = UIImage(
+            systemName: ep_textView.selectLiked ? "heart.fill" : "heart"
+        )
+    }
+
+    @objc func toggleCheck() {
+        print("Toggle check ViewController")
+        ep_textView.selectCheck.toggle()
+        buttonCheck.image = UIImage(
+            systemName: ep_textView.selectCheck ? "checkmark.circle.fill" : "checkmark.circle"
+        )
+    }
+
+    @objc func copyText() {
+        print("Copy text")
+    }
+
+    @objc func createNewPost() {
+        print("Create new post")
+    }
     
     //undo
     

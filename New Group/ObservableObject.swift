@@ -7,6 +7,16 @@
 
 import SwiftUI
 import CoreData
+import Foundation
+import Combine
+
+// MARK: - TextView
+
+class TextViewManager: ObservableObject {
+    @Published var selectLiked: Bool = false
+    @Published var selectCheck: Bool = false
+}
+
 
 // MARK: - Color 
 

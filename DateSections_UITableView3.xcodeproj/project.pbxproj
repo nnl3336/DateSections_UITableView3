@@ -17,6 +17,7 @@
 		187818A12E3F4837000C988A /* extension_TableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A02E3F4837000C988A /* extension_TableView.swift */; };
 		187818A52E3F77C1000C988A /* extension_TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A42E3F77C1000C988A /* extension_TextView.swift */; };
 		187818A82E408FBE000C988A /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A72E408FBE000C988A /* CustomCell.swift */; };
+		1883BCAB2E41F611003B697C /* ObservableObjectTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1883BCAA2E41F611003B697C /* ObservableObjectTextView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +51,7 @@
 		187818A02E3F4837000C988A /* extension_TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_TableView.swift; sourceTree = "<group>"; };
 		187818A42E3F77C1000C988A /* extension_TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_TextView.swift; sourceTree = "<group>"; };
 		187818A72E408FBE000C988A /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
+		1883BCAA2E41F611003B697C /* ObservableObjectTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObjectTextView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -141,6 +143,7 @@
 			children = (
 				182164E72E3DB9CB00563DFC /* DetailView.swift */,
 				1870D1912E41A56500A09218 /* ObservableObject 2.swift */,
+				1883BCAA2E41F611003B697C /* ObservableObjectTextView.swift */,
 			);
 			path = "-";
 			sourceTree = "<group>";
@@ -310,6 +313,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				187818A12E3F4837000C988A /* extension_TableView.swift in Sources */,
+				1883BCAB2E41F611003B697C /* ObservableObjectTextView.swift in Sources */,
 				182164D62E3CA3AD00563DFC /* ContentView.swift in Sources */,
 				187818A52E3F77C1000C988A /* extension_TextView.swift in Sources */,
 				182164E82E3DB9CB00563DFC /* DetailView.swift in Sources */,

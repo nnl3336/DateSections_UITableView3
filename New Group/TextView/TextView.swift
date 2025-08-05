@@ -21,10 +21,10 @@ class DetailViewController: UIViewController {
             messageDate = message?.date
         }
     }
-
+    
     var messageText: NSMutableAttributedString = NSMutableAttributedString(string: "")
     var messageDate: Date? // ← 追加
-
+    
     let textView = UITextView()
     let addButton = UIButton(type: .system)
     
@@ -34,14 +34,25 @@ class DetailViewController: UIViewController {
     
     //var undoManager: UndoManager?
     /*var undoTimer: Timer?
+     
+     var isUndoGrouping = false*/
     
-    var isUndoGrouping = false*/
-    
+    // Undo/Redo ボタン
     var backButton: UIBarButtonItem!
     var redoButton: UIBarButtonItem!
 
+    // その他のボタン
+    var saveButton: UIBarButtonItem!
+    var photoButton: UIBarButtonItem!
+    var buttonLike: UIBarButtonItem!
+    var buttonCheck: UIBarButtonItem!
+    var buttonCopy: UIBarButtonItem!
+    var newPostButton: UIBarButtonItem!
+    
+    let ep_textView = TextViewManager()
+    
     //***
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
