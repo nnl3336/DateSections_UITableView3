@@ -109,7 +109,6 @@ class MessageStore: NSObject, ObservableObject, NSFetchedResultsControllerDelega
             documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]) {
             message.attributedText = data
         }
-        message.date = Date()
         CoreDataManager.shared.saveContext()
         // fetchMessages() は不要。FRCが反応するので
     }

@@ -146,6 +146,7 @@
 				182164E72E3DB9CB00563DFC /* DetailView.swift */,
 				1870D1912E41A56500A09218 /* ObservableObject 2.swift */,
 				1883BCAA2E41F611003B697C /* ObservableObjectTextView.swift */,
+				187818A42E3F77C1000C988A /* extension_TextView.swift */,
 			);
 			path = "-";
 			sourceTree = "<group>";
@@ -154,7 +155,6 @@
 			isa = PBXGroup;
 			children = (
 				182164EF2E3DBCB100563DFC /* TextView.swift */,
-				187818A42E3F77C1000C988A /* extension_TextView.swift */,
 			);
 			path = TextView;
 			sourceTree = "<group>";
