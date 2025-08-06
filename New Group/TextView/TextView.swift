@@ -13,7 +13,8 @@ class DetailViewController: UIViewController {
     var message: MessageEntity? {
         didSet {
             print("message set: \(String(describing: message?.attributedText))")
-            if let attrText = message?.attributedText as? NSAttributedString {
+            if let data = message?.attributedText,
+               let attrText = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? NSAttributedString {
                 messageText = NSMutableAttributedString(attributedString: attrText)
             } else {
                 messageText = NSMutableAttributedString(string: "")
@@ -325,31 +326,27 @@ extension DetailViewController {
         let attachment = NSTextAttachment()
         attachment.image = image
 
-        // オプション：サイズ調整（例：幅をtextViewの幅に合わせる）
+        // サイズ調整（必要であれば）
         let maxWidth = textView.frame.width - 20
-        if let img = attachment.image, img.size.width > 0 {
-            let scale = maxWidth / img.size.width
-            attachment.bounds = CGRect(x: 0, y: 0, width: img.size.width * scale, height: img.size.height * scale)
+        if image.size.width > 0 {
+            let scale = maxWidth / image.size.width
+            attachment.bounds = CGRect(x: 0, y: 0, width: image.size.width * scale, height: image.size.height * scale)
         }
 
         let attributedImage = NSAttributedString(attachment: attachment)
 
-        // 現在のカーソル位置に挿入
-        if let selectedRange = textView.selectedTextRange {
-            let cursorPosition = textView.offset(from: textView.beginningOfDocument, to: selectedRange.start)
-            let mutableAttrText = NSMutableAttributedString(attributedString: textView.attributedText)
-            mutableAttrText.insert(attributedImage, at: cursorPosition)
-            textView.attributedText = mutableAttrText
+        // カーソル位置を取得して挿入
+        let cursorPosition = textView.selectedRange.location
+        messageText.insert(attributedImage, at: cursorPosition)
 
-            // カーソル位置を画像の後ろに移動
-            if let newPosition = textView.position(from: selectedRange.start, offset: 1) {
-                textView.selectedTextRange = textView.textRange(from: newPosition, to: newPosition)
-            }
-        } else {
-            // 範囲がない場合、末尾に追加
-            textView.textStorage.append(attributedImage)
-        }
+        // textView に反映
+        textView.attributedText = messageText
+
+        // カーソル位置を画像の後ろに移動
+        let newCursorPosition = cursorPosition + 1
+        textView.selectedRange = NSRange(location: newCursorPosition, length: 0)
     }
+
     
     // MARK: - Keyboard
     
