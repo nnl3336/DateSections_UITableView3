@@ -17,7 +17,7 @@ class DetailViewController: UIViewController {
     var messageText: NSMutableAttributedString = NSMutableAttributedString(string: "")
     var messageDate: Date? // ← 追加
     
-    let textView = UITextView()
+    let textView = RichTextView()
     let addButton = UIButton(type: .system)
     
     var coordinator: DetailViewCoordinator!
@@ -42,6 +42,9 @@ class DetailViewController: UIViewController {
     var newPostButton: UIBarButtonItem!
     
     let ep_textView = TextViewManager()
+    
+    var newButton: UIBarButtonItem!
+    var pencilItem: UIBarButtonItem!
     
     //***
     
@@ -90,6 +93,14 @@ class DetailViewController: UIViewController {
         )
         
         updateUndoRedoButtons()
+        
+        // 通知を監視
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.updateMessage(_:withAttributedText:)),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
     }
     
     //***
@@ -180,6 +191,7 @@ extension DetailViewController {
         )
         newPostButton.tintColor = acColor
         //newPostButton.isEnabled = ep_item.item != nil
+        newPostButton.isEnabled = (message != nil)
         
         //coordinator.newPostButton = newPostButton
         
@@ -229,18 +241,21 @@ extension DetailViewController {
                 print("Search tapped")
             },
             UIAction(title: "Trash", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                print("Trash tapped")
+                self.confirmDeleteMessage()
             }
+
+
         ])
 
         let menuButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu)
 
-        let newButton = UIBarButtonItem(
+        newButton = UIBarButtonItem(
             image: UIImage(systemName: "square.and.pencil"),
             style: .plain,
             target: self,
             action: #selector(self.newPost)
         )
+        newButton.isEnabled = (message != nil)
 
         navigationItem.rightBarButtonItems = [newButton, menuButton]
     }
@@ -263,12 +278,13 @@ extension DetailViewController {
         let labelItem = UIBarButtonItem(customView: dateLabel)
         let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
 
-        let pencilItem = UIBarButtonItem(
+        pencilItem = UIBarButtonItem(
             image: UIImage(systemName: "square.and.pencil"),
             style: .plain,
             target: self,
             action: #selector(self.newPost)
         )
+        pencilItem.isEnabled = (message != nil)
 
         toolbar.setItems([flexible, labelItem, flexible, pencilItem], animated: false)
 
@@ -288,6 +304,47 @@ extension DetailViewController {
 // MARK: - Func
 
 extension DetailViewController {
+    
+    // MARK: - Func Navigation
+    
+    func confirmDeleteMessage() {
+        let alert = UIAlertController(title: "削除の確認",
+                                      message: "このメッセージを本当に削除してもよろしいですか？",
+                                      preferredStyle: .alert)
+
+        alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel))
+
+        alert.addAction(UIAlertAction(title: "削除", style: .destructive) { _ in
+            self.deleteMessageAndClose()
+        })
+
+        self.present(alert, animated: true)
+    }
+
+    
+    // MARK: - Func save
+    
+    func deleteMessageAndClose() {
+        guard let message = self.message else { return }
+        CoreDataManager.shared.context.delete(message)
+        CoreDataManager.shared.saveContext()
+        print("✅ Message deleted")
+        self.dismiss(animated: true)
+    }
+
+    // MARK: - Func UI
+    
+    func updatenewPostButtonState() {
+        newPostButton.isEnabled = (message != nil)
+    }
+    
+    func updatePencilItemState() {
+        pencilItem.isEnabled = (message != nil)
+    }
+    
+    func updateNewButtonState() {
+        newButton.isEnabled = (message != nil)
+    }
     
     func updateSaveButtonState() {
         saveButton.isEnabled = (message != nil)
@@ -410,18 +467,70 @@ extension DetailViewController {
 
 extension DetailViewController {
     
+    // MARK: - Actions paste 手動貼り付け
     
-    // MARK: -
+    /*@objc func pasteText() {
+            let pasteboard = UIPasteboard.general
+
+            if let rtfData = pasteboard.data(forPasteboardType: "public.rtf") {
+                do {
+                    let attributedString = try NSAttributedString(
+                        data: rtfData,
+                        options: [.documentType: NSAttributedString.DocumentType.rtf],
+                        documentAttributes: nil
+                    )
+                    textView.attributedText = attributedString
+                    print("✅ RTFを貼り付けました")
+                } catch {
+                    print("❌ RTFの読み込み失敗: \(error)")
+                }
+            } else {
+                print("❌ PasteboardにRTFがありません")
+            }
+        }*/
+    
+    // MARK: - Actions
 
     @objc func backButtonTapped() {
         navigationController?.popViewController(animated: true)
     }
 
-    @objc func newButtonTapped() {
-        print("📝 新規作成タップ")
+    // MARK: - Actions save
+    
+    @objc func updateMessage(_ message: MessageEntity, withAttributedText attributedText: NSMutableAttributedString) {
+        print("🔷 updateMessage called.")
+
+        guard let data = try? attributedText.data(
+            from: NSRange(location: 0, length: attributedText.length),
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]
+        ) else {
+            print("❌ Failed to convert attributedText to data.")
+            return
+        }
+
+        if message.attributedText != data {
+            print("🆕 Content changed. Updating and saving.")
+            message.attributedText = data
+            
+            // 🔽 非同期保存（バックグラウンドキュー）
+            DispatchQueue.global(qos: .background).async {
+                CoreDataManager.shared.saveContext()
+                print("💾 CoreDataManager.saveContext() called (async).")
+            }
+        } else {
+            print("⚪️ No changes detected. Skipping save.")
+        }
+
+        print("✅ Message update complete.")
+        
+        // fetchMessages() は不要。FRCが反応するので
+
     }
 
-    // MARK: -
+    
+    /*@objc func newButtonTapped() {
+        print("📝 新規作成タップ")
+    }*/
     
     @objc func newPost() {
         print("newPost")
@@ -484,15 +593,20 @@ extension DetailViewController {
         do {
             let data = try attrText.data(
                 from: NSRange(location: 0, length: attrText.length),
-                documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
+                documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf] // ✅ここを変更
             )
-            UIPasteboard.general.setData(data, forPasteboardType: "public.rtf")
+            UIPasteboard.general.items = [
+                ["public.rtf": data,
+                 "public.utf8-plain-text": attrText.string]
+            ]
             print("✅ リッチテキスト（RTF）をコピーしました")
+            print("📋 Pasteboard types: \(UIPasteboard.general.types)")
             showCopyToast()
         } catch {
             print("❌ RTFのコピー失敗: \(error)")
         }
     }
+
 
 
     /*@objc func createNewPost() {
@@ -618,7 +732,7 @@ extension DetailViewController: UITextViewDelegate {
             DispatchQueue.global(qos: .background).async {
                 print("🔵 Updating message in background thread.")
                 self.store.updateMessage(message, withAttributedText: attributed)
-                print("✅ Message update complete.")
+                //print("✅ Message update complete.")
             }
         } else {
             print("🔴 Message is nil. Skipping update.")
@@ -645,16 +759,20 @@ extension DetailViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
         if message == nil {
             message = /*CoreDataManager.shared.createMessage()*/ store.createMessage()
-            }
-
-            // 編集内容を反映
+        }
+        
+        // 編集内容を反映
+        messageText = NSMutableAttributedString(attributedString: textView.attributedText)
+        
+        if let message = message {
             messageText = NSMutableAttributedString(attributedString: textView.attributedText)
-
-            if let message = message {
-                messageText = NSMutableAttributedString(attributedString: textView.attributedText)
-            }
-
-            updateSaveButtonState()
+        }
+        
+        updateSaveButtonState()
+        updateNewButtonState()
+        updatePencilItemState()
+        updatenewPostButtonState()
+        
     }
 
     /*func textViewDidBeginEditing(_ textView: UITextView) {
@@ -743,3 +861,29 @@ struct TextViewWrapper: UIViewRepresentable {
     }
 }
 */
+
+// MARK: - Custom
+
+class RichTextView: UITextView {
+    override func paste(_ sender: Any?) {
+        let pasteboard = UIPasteboard.general
+
+        // RTFがある場合はリッチテキストとして貼り付け
+        if let rtfData = pasteboard.data(forPasteboardType: "public.rtf") {
+            do {
+                let attributedString = try NSAttributedString(
+                    data: rtfData,
+                    options: [.documentType: NSAttributedString.DocumentType.rtf],
+                    documentAttributes: nil
+                )
+                self.textStorage.replaceCharacters(in: self.selectedRange, with: attributedString)
+                print("✅ リッチテキストをペーストしました")
+            } catch {
+                print("❌ RTF読み込み失敗: \(error)")
+            }
+        } else {
+            // 通常のプレーンテキスト貼り付け
+            super.paste(sender)
+        }
+    }
+}

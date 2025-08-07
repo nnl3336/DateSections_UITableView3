@@ -110,24 +110,41 @@ class MessageStore: NSObject, ObservableObject, NSFetchedResultsControllerDelega
         message.date = Date()  // 必要に応じて初期化
         return message
     }
-
+    
     func updateMessage(_ message: MessageEntity, withAttributedText attributedText: NSMutableAttributedString) {
         print("🔷 updateMessage called.")
 
-        if let data = try? attributedText.data(
-            from: NSRange(location: 0, length: attributedText.length),
-            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]) {
-            print("🔶 Successfully converted attributedText to data.")
-            message.attributedText = data
-        } else {
-            print("❌ Failed to convert attributedText to data.")
+        // 🔸 空なら削除
+        if attributedText.length == 0 {
+            print("🗑 Empty content. Deleting message.")
+            CoreDataManager.shared.context.delete(message)
+            CoreDataManager.shared.saveContext()
+            print("💾 Deleted empty message and saved context.")
+            return
         }
 
-        CoreDataManager.shared.saveContext()
-        print("💾 CoreDataManager.saveContext() called.")
-        
+        guard let data = try? attributedText.data(
+            from: NSRange(location: 0, length: attributedText.length),
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]
+        ) else {
+            print("❌ Failed to convert attributedText to data.")
+            return
+        }
+
+        if message.attributedText != data {
+            print("🆕 Content changed. Updating and saving.")
+            message.attributedText = data
+            CoreDataManager.shared.saveContext()
+            print("💾 CoreDataManager.saveContext() called.")
+        } else {
+            print("⚪️ No changes detected. Skipping save.")
+        }
+
+        print("✅ Message update complete.")
         // fetchMessages() は不要。FRCが反応するので
     }
+
+
 
 
     func addMessage(_ attributedText: NSMutableAttributedString, selectedMessage: MessageEntity? = nil) {
