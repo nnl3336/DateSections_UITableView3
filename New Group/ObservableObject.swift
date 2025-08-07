@@ -101,17 +101,34 @@ class MessageStore: NSObject, ObservableObject, NSFetchedResultsControllerDelega
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         messages = fetchedResultsController.fetchedObjects ?? []
     }
+    
+    // MARK: - save
+    
+    // CoreDataManager.swift
+    func createMessage() -> MessageEntity {
+        let message = MessageEntity(context: context)
+        message.date = Date()  // 必要に応じて初期化
+        return message
+    }
 
     func updateMessage(_ message: MessageEntity, withAttributedText attributedText: NSMutableAttributedString) {
-        print("updateMessage called.")
+        print("🔷 updateMessage called.")
+
         if let data = try? attributedText.data(
             from: NSRange(location: 0, length: attributedText.length),
             documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]) {
+            print("🔶 Successfully converted attributedText to data.")
             message.attributedText = data
+        } else {
+            print("❌ Failed to convert attributedText to data.")
         }
+
         CoreDataManager.shared.saveContext()
+        print("💾 CoreDataManager.saveContext() called.")
+        
         // fetchMessages() は不要。FRCが反応するので
     }
+
 
     func addMessage(_ attributedText: NSMutableAttributedString, selectedMessage: MessageEntity? = nil) {
         print("addMessage called. selectedMessage: \(String(describing: selectedMessage))")

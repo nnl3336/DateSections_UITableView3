@@ -132,6 +132,7 @@ extension DetailViewController {
             action: #selector(self.saveText)
         )
         saveButton.tintColor = acColor
+        saveButton.isEnabled = (message != nil)
         
         //
         
@@ -288,7 +289,46 @@ extension DetailViewController {
 
 extension DetailViewController {
     
-    // MARK: - Photo
+    func updateSaveButtonState() {
+        saveButton.isEnabled = (message != nil)
+    }
+
+    
+    // MARK: - Func Resize
+    
+    // 画像のサイズをtextView幅に合わせて補正する関数例
+    func fixAttachmentSizes(in attributedString: NSMutableAttributedString, maxWidth: CGFloat) {
+        print("📏 fixAttachmentSizes: maxWidth = \(maxWidth)")
+        
+        attributedString.enumerateAttribute(.attachment, in: NSRange(location: 0, length: attributedString.length)) { value, range, _ in
+            guard let attachment = value as? NSTextAttachment else {
+                print("🚫 attachment is nil")
+                return
+            }
+
+            var image: UIImage?
+
+            if let img = attachment.image {
+                image = img
+                print("🖼️ attachment.image: \(img.size)")
+            } else if let data = attachment.contents,
+                      let img = UIImage(data: data) {
+                image = img
+                print("📦 attachment.contents loaded image: \(img.size)")
+            } else {
+                print("❗ image not found in attachment")
+            }
+
+            if let image = image {
+                let scale = min(1, maxWidth / image.size.width)
+                let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+                print("🔧 resizing to: \(newSize)")
+                attachment.bounds = CGRect(origin: .zero, size: newSize)
+            }
+        }
+    }
+    
+    // MARK: - Func Photo
     
     func handleSelectedImages(_ images: [UIImage]) {
         print("画像が選択されました: \(images.count) 枚")
@@ -335,10 +375,9 @@ extension DetailViewController {
         let newCursorPosition = cursorPosition + 1
         textView.selectedRange = NSRange(location: newCursorPosition, length: 0)
     }
-
     
     
-    // MARK: - Keyboard
+    // MARK: - Func Keyboard
     
     private func showCopyToast() {
         let toastLabel = UILabel()
@@ -493,7 +532,7 @@ extension DetailViewController {
             print("Adding new message")
             store.addMessage(messageText)
         }
-        dismiss(animated: true)
+        //dismiss(animated: true)
     }
     
     // String
@@ -568,39 +607,24 @@ extension DetailViewController {
 
 extension DetailViewController: UITextViewDelegate {
     
-    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
 
-    // 画像のサイズをtextView幅に合わせて補正する関数例
-    func fixAttachmentSizes(in attributedString: NSMutableAttributedString, maxWidth: CGFloat) {
-        print("📏 fixAttachmentSizes: maxWidth = \(maxWidth)")
-        
-        attributedString.enumerateAttribute(.attachment, in: NSRange(location: 0, length: attributedString.length)) { value, range, _ in
-            guard let attachment = value as? NSTextAttachment else {
-                print("🚫 attachment is nil")
-                return
+        print("🟡 viewWillDisappear called.")
+
+        if let message = message {
+            let attributed = messageText
+            print("🟢 Message is not nil. Preparing to update in background.")
+            DispatchQueue.global(qos: .background).async {
+                print("🔵 Updating message in background thread.")
+                self.store.updateMessage(message, withAttributedText: attributed)
+                print("✅ Message update complete.")
             }
-
-            var image: UIImage?
-
-            if let img = attachment.image {
-                image = img
-                print("🖼️ attachment.image: \(img.size)")
-            } else if let data = attachment.contents,
-                      let img = UIImage(data: data) {
-                image = img
-                print("📦 attachment.contents loaded image: \(img.size)")
-            } else {
-                print("❗ image not found in attachment")
-            }
-
-            if let image = image {
-                let scale = min(1, maxWidth / image.size.width)
-                let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
-                print("🔧 resizing to: \(newSize)")
-                attachment.bounds = CGRect(origin: .zero, size: newSize)
-            }
+        } else {
+            print("🔴 Message is nil. Skipping update.")
         }
     }
+
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -619,7 +643,18 @@ extension DetailViewController: UITextViewDelegate {
     }
     
     func textViewDidChange(_ textView: UITextView) {
-        messageText = NSMutableAttributedString(attributedString: textView.attributedText)
+        if message == nil {
+            message = /*CoreDataManager.shared.createMessage()*/ store.createMessage()
+            }
+
+            // 編集内容を反映
+            messageText = NSMutableAttributedString(attributedString: textView.attributedText)
+
+            if let message = message {
+                messageText = NSMutableAttributedString(attributedString: textView.attributedText)
+            }
+
+            updateSaveButtonState()
     }
 
     /*func textViewDidBeginEditing(_ textView: UITextView) {
