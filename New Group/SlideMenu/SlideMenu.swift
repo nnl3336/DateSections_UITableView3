@@ -7,8 +7,9 @@
 
 import SwiftUI
 import CoreData
+import UIKit
 
-class SlideMenuViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class SlideMenuViewController: UIViewController {
     var context: NSManagedObjectContext!
     var folders: [Folder] = []
     var didSelectFolder: ((Folder) -> Void)?
@@ -19,11 +20,16 @@ class SlideMenuViewController: UIViewController, UITableViewDataSource, UITableV
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
         setupTableView()
-        fetchFolders()
+
+        // ここでデフォルトフォルダを確実に作成してから fetch
+        ensureDefaultFoldersIfNeeded { [weak self] in
+            self?.fetchFolders()
+        }
     }
 
     private func setupTableView() {
         tableView.frame = view.bounds
+        tableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(FolderCell.self, forCellReuseIdentifier: FolderCell.reuseIdentifier)
@@ -31,16 +37,73 @@ class SlideMenuViewController: UIViewController, UITableViewDataSource, UITableV
         view.addSubview(tableView)
     }
 
-    private func fetchFolders() {
+    // MARK: - Fetch
+    func fetchFolders() {
+        guard context != nil else { return }
         let request: NSFetchRequest<Folder> = Folder.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: true)]
-        if let result = try? context.fetch(request) {
-            folders = result
-            tableView.reloadData()
+
+        context.perform { [weak self] in
+            do {
+                let result = try self?.context.fetch(request) ?? []
+                DispatchQueue.main.async {
+                    self?.folders = result
+                    self?.tableView.reloadData()
+                }
+            } catch {
+                print("Failed to fetch folders:", error)
+            }
         }
     }
 
-    // MARK: - TableView
+    // MARK: - Ensure default folders
+    private func ensureDefaultFoldersIfNeeded(completion: @escaping () -> Void) {
+        guard context != nil else {
+            completion()
+            return
+        }
+
+        // デフォルトフォルダ名の配列
+        let defaultNames = ["もめも", "とらっしゅ"]
+
+        context.perform { [weak self] in
+            guard let self = self else { return }
+
+            // 既にデフォルトのいずれかが存在するか確認する（重複防止）
+            let request: NSFetchRequest<Folder> = Folder.fetchRequest()
+            request.predicate = NSPredicate(format: "name IN %@", defaultNames)
+            do {
+                let existing = try self.context.fetch(request).compactMap { $0.folderName }
+                var didCreate = false
+
+                for name in defaultNames {
+                    if !existing.contains(name) {
+                        let folder = Folder(context: self.context)
+                        folder.folderName = name
+                        folder.createdAt = Date()
+                        folder.isDefault = true
+                        didCreate = true
+                    }
+                }
+
+                if didCreate {
+                    try self.context.save()
+                }
+            } catch {
+                print("Error ensuring default folders:", error)
+            }
+
+            // 完了ハンドラ（UI 更新は呼び出し元で行う）
+            DispatchQueue.main.async {
+                completion()
+            }
+        }
+    }
+}
+
+//
+
+extension SlideMenuViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return folders.count
     }
@@ -48,8 +111,6 @@ class SlideMenuViewController: UIViewController, UITableViewDataSource, UITableV
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: FolderCell.reuseIdentifier, for: indexPath) as! FolderCell
         let folder = folders[indexPath.row]
-
-        // デフォルトフォルダはアイコンを変える
         if folder.isDefault {
             if folder.folderName == "Trash" {
                 cell.configure(with: folder.folderName ?? "", iconName: "trash")
@@ -67,7 +128,6 @@ class SlideMenuViewController: UIViewController, UITableViewDataSource, UITableV
     }
 }
 
-//
 
 extension SlideMenuViewController {
     
