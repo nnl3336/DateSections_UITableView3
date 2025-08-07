@@ -10,18 +10,9 @@ import UIKit
 
 class DetailViewController: UIViewController {
     var store: MessageStore!
-    var message: MessageEntity? {
-        didSet {
-            print("message set: \(String(describing: message?.attributedText))")
-            if let data = message?.attributedText,
-               let attrText = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? NSAttributedString {
-                messageText = NSMutableAttributedString(attributedString: attrText)
-            } else {
-                messageText = NSMutableAttributedString(string: "")
-            }
-            messageDate = message?.date
-        }
-    }
+    var message: MessageEntity?
+
+    private var hasFixedImageSizes = false
     
     var messageText: NSMutableAttributedString = NSMutableAttributedString(string: "")
     var messageDate: Date? // ← 追加
@@ -237,12 +228,12 @@ extension DetailViewController {
     
     func setupNavigationBar() {
         // 左の戻るボタン（custom）
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
+        /*navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "chevron.left"),
             style: .plain,
             target: self,
             action: #selector(backButtonTapped)
-        )
+        )*/
 
         // 右のメニューと pencil ボタン
         let menu = UIMenu(title: "", children: [
@@ -263,7 +254,7 @@ extension DetailViewController {
             image: UIImage(systemName: "square.and.pencil"),
             style: .plain,
             target: self,
-            action: #selector(newButtonTapped)
+            action: #selector(self.newPost)
         )
 
         navigationItem.rightBarButtonItems = [newButton, menuButton]
@@ -291,7 +282,7 @@ extension DetailViewController {
             image: UIImage(systemName: "square.and.pencil"),
             style: .plain,
             target: self,
-            action: #selector(newButtonTapped)
+            action: #selector(self.newPost)
         )
 
         toolbar.setItems([flexible, labelItem, flexible, pencilItem], animated: false)
@@ -327,7 +318,8 @@ extension DetailViewController {
         attachment.image = image
 
         // サイズ調整（必要であれば）
-        let maxWidth = textView.frame.width - 20
+        /*let maxWidth = /*textView.frame.width - 20*/ 200*/ let maxWidth = CGFloat(200)  // または CGFloat(textView.frame.width - 20)
+
         if image.size.width > 0 {
             let scale = maxWidth / image.size.width
             attachment.bounds = CGRect(x: 0, y: 0, width: image.size.width * scale, height: image.size.height * scale)
@@ -337,6 +329,19 @@ extension DetailViewController {
 
         // カーソル位置を取得して挿入
         let cursorPosition = textView.selectedRange.location
+
+        // 現在の状態を保存してUndoに登録
+        let previousText = messageText.mutableCopy() as! NSMutableAttributedString
+        let previousSelectedRange = textView.selectedRange
+
+        textView.undoManager?.registerUndo(withTarget: self) { target in
+            target.messageText = previousText
+            target.textView.attributedText = previousText
+            target.textView.selectedRange = previousSelectedRange
+        }
+        textView.undoManager?.setActionName("画像追加")
+
+        // 画像挿入処理
         messageText.insert(attributedImage, at: cursorPosition)
 
         // textView に反映
@@ -347,6 +352,7 @@ extension DetailViewController {
         textView.selectedRange = NSRange(location: newCursorPosition, length: 0)
     }
 
+    
     
     // MARK: - Keyboard
     
@@ -408,6 +414,8 @@ extension DetailViewController {
         // 設定の初期化（例）
         message = nil
         messageText = NSMutableAttributedString(string: "")
+        
+        textView.attributedText = messageText
 
     }
     
@@ -420,7 +428,11 @@ extension DetailViewController {
             print("Adding new message")
             store.addMessage(messageText)
         }
-        dismiss(animated: true)
+        if let navigationController = self.navigationController {
+            navigationController.popViewController(animated: true)
+        } else {
+            dismiss(animated: true)
+        }
     }
 
     @objc func showImagePicker() {
@@ -553,6 +565,56 @@ extension DetailViewController {
 // MARK: - UITextViewDelegate
 
 extension DetailViewController: UITextViewDelegate {
+    
+    
+
+    // 画像のサイズをtextView幅に合わせて補正する関数例
+    func fixAttachmentSizes(in attributedString: NSMutableAttributedString, maxWidth: CGFloat) {
+        print("📏 fixAttachmentSizes: maxWidth = \(maxWidth)")
+        
+        attributedString.enumerateAttribute(.attachment, in: NSRange(location: 0, length: attributedString.length)) { value, range, _ in
+            guard let attachment = value as? NSTextAttachment else {
+                print("🚫 attachment is nil")
+                return
+            }
+
+            var image: UIImage?
+
+            if let img = attachment.image {
+                image = img
+                print("🖼️ attachment.image: \(img.size)")
+            } else if let data = attachment.contents,
+                      let img = UIImage(data: data) {
+                image = img
+                print("📦 attachment.contents loaded image: \(img.size)")
+            } else {
+                print("❗ image not found in attachment")
+            }
+
+            if let image = image {
+                let scale = min(1, maxWidth / image.size.width)
+                let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+                print("🔧 resizing to: \(newSize)")
+                attachment.bounds = CGRect(origin: .zero, size: newSize)
+            }
+        }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        guard !hasFixedImageSizes, let data = message?.attributedText else { return }
+
+        let options: [NSAttributedString.DocumentReadingOptionKey: Any] = [
+            .documentType: NSAttributedString.DocumentType.rtfd
+        ]
+        if let attrText = try? NSMutableAttributedString(data: data, options: options, documentAttributes: nil) {
+            fixAttachmentSizes(in: attrText, maxWidth: textView.frame.width - 20)
+            messageText = attrText
+            textView.attributedText = messageText
+            hasFixedImageSizes = true
+        }
+    }
     
     func textViewDidChange(_ textView: UITextView) {
         messageText = NSMutableAttributedString(attributedString: textView.attributedText)

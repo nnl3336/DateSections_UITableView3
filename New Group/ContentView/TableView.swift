@@ -121,7 +121,8 @@ class DateGroupedTableViewController: UIViewController {
         setupToolbar()
         setupGesture()
         
-        
+        self.navigationItem.backButtonTitle = title
+
     }
 }
 
