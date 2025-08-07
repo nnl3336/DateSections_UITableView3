@@ -204,22 +204,6 @@ extension DetailViewController {
     }
 }
 
-// MARK: - Utility Support
-
-extension DetailViewController {
-    func formattedDate() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy/MM/dd"
-        return formatter.string(from: Date())
-    }
-
-    func formattedDate2() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: Date())
-    }
-}
-
 ///
 
 // MARK: - NavigationBar
@@ -558,6 +542,24 @@ extension DetailViewController {
         ])
     }
 
+}
+
+///
+
+// MARK: - Utility Support
+
+extension DetailViewController {
+    func formattedDate() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy/MM/dd"
+        return formatter.string(from: Date())
+    }
+
+    func formattedDate2() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: Date())
+    }
 }
 
 ///
