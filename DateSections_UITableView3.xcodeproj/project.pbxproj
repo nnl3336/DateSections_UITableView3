@@ -19,6 +19,7 @@
 		187818A82E408FBE000C988A /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A72E408FBE000C988A /* CustomCell.swift */; };
 		1883BCAB2E41F611003B697C /* ObservableObjectTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1883BCAA2E41F611003B697C /* ObservableObjectTextView.swift */; };
 		18E78FEF2E4567D600F2A92C /* SlideMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E78FEE2E4567D600F2A92C /* SlideMenu.swift */; };
+		18E78FF12E456C2000F2A92C /* FolderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E78FF02E456C2000F2A92C /* FolderCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		187818A72E408FBE000C988A /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
 		1883BCAA2E41F611003B697C /* ObservableObjectTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObjectTextView.swift; sourceTree = "<group>"; };
 		18E78FEE2E4567D600F2A92C /* SlideMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideMenu.swift; sourceTree = "<group>"; };
+		18E78FF02E456C2000F2A92C /* FolderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -183,6 +185,7 @@
 			isa = PBXGroup;
 			children = (
 				187818A72E408FBE000C988A /* CustomCell.swift */,
+				18E78FF02E456C2000F2A92C /* FolderCell.swift */,
 			);
 			path = Others;
 			sourceTree = "<group>";
@@ -344,6 +347,7 @@
 				1883BCAB2E41F611003B697C /* ObservableObjectTextView.swift in Sources */,
 				182164D62E3CA3AD00563DFC /* TableView.swift in Sources */,
 				187818A52E3F77C1000C988A /* extension_TextView.swift in Sources */,
+				18E78FF12E456C2000F2A92C /* FolderCell.swift in Sources */,
 				182164E82E3DB9CB00563DFC /* DetailView.swift in Sources */,
 				182164E52E3DA91A00563DFC /* extension.swift in Sources */,
 				182164EA2E3DB9F100563DFC /* ObservableObject.swift in Sources */,

@@ -173,38 +173,39 @@ extension DateGroupedTableViewController {
             }
         }
 
-        func showSlideMenu() {
-            guard slideMenuVC == nil else { return }
+    func showSlideMenu() {
+        guard slideMenuVC == nil else { return }
 
-            let menuVC = SlideMenuViewController()
-            menuVC.didSelectFolder = { [weak self] folder in
-                print("Selected folder: \(folder)")
-                self?.hideSlideMenu()
-            }
-
-            addChild(menuVC)
-            view.addSubview(menuVC.view)
-            menuVC.didMove(toParent: self)
-
-            let width: CGFloat = 250
-            menuVC.view.frame = CGRect(x: -width, y: 0, width: width, height: view.frame.height)
-
-            // Dimming view
-            let dimming = UIView(frame: view.bounds)
-            dimming.backgroundColor = UIColor.black.withAlphaComponent(0.3)
-            dimming.alpha = 0
-            dimming.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(hideSlideMenu)))
-            view.insertSubview(dimming, belowSubview: menuVC.view)
-
-            slideMenuVC = menuVC
-            dimmingView = dimming
-            isSlideMenuVisible = true
-
-            UIView.animate(withDuration: 0.3) {
-                menuVC.view.frame.origin.x = 0
-                dimming.alpha = 1
-            }
+        let menuVC = SlideMenuViewController()
+        menuVC.context = CoreDataManager.shared.context // ← Core Data の context を渡す
+        menuVC.didSelectFolder = { [weak self] folder in
+            print("Selected folder: \(folder.folderName ?? "")")
+            self?.hideSlideMenu()
         }
+
+        addChild(menuVC)
+        view.addSubview(menuVC.view)
+        menuVC.didMove(toParent: self)
+
+        let width: CGFloat = 250
+        menuVC.view.frame = CGRect(x: -width, y: 0, width: width, height: view.frame.height)
+
+        // Dimming view
+        let dimming = UIView(frame: view.bounds)
+        dimming.backgroundColor = UIColor.black.withAlphaComponent(0.3)
+        dimming.alpha = 0
+        dimming.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(hideSlideMenu)))
+        view.insertSubview(dimming, belowSubview: menuVC.view)
+
+        slideMenuVC = menuVC
+        dimmingView = dimming
+        isSlideMenuVisible = true
+
+        UIView.animate(withDuration: 0.3) {
+            menuVC.view.frame.origin.x = 0
+            dimming.alpha = 1
+        }
+    }
     
     // MARK: - Actions Folder
     
@@ -212,7 +213,7 @@ extension DateGroupedTableViewController {
         let context = CoreDataManager.shared.context
 
         let folder = Folder(context: context)
-        folder.fontName = name
+        folder.folderName = name
 
         CoreDataManager.shared.saveContext()
 
