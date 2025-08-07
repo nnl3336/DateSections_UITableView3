@@ -44,7 +44,9 @@ extension DateGroupedTableViewController {
     func setupNavigation() {
         navigationController?.navigationBar.prefersLargeTitles = true
         title = "メッセージ一覧"
+
         navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(image: UIImage(systemName: "folder" /*"folder.badge.plus"*/), style: .plain, target: self, action: #selector(addFolderTapped)),
             UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped)),
             UIBarButtonItem(title: "選択", style: .plain, target: self, action: #selector(toggleSelectionMode))
         ]
@@ -136,6 +138,48 @@ extension DateGroupedTableViewController: UITableViewDelegate {
         let message = groupedMessages[indexPath.section].messages[indexPath.row]
         selectedMessages.removeAll { $0.id == message.id }
     }
+}
+
+// MARK: - Actions
+
+extension DateGroupedTableViewController {
+    
+    // MARK: - Actions Folder
+    
+    private func createFolder(named name: String) {
+        let context = CoreDataManager.shared.context
+
+        let folder = Folder(context: context)
+        folder.fontName = name
+
+        CoreDataManager.shared.saveContext()
+
+        print("フォルダ作成: \(name)")
+
+        // 必要ならフォルダリストを更新
+        // self.fetchFolders()
+    }
+    
+    @objc private func addFolderTapped() {
+        let alert = UIAlertController(title: "新しいフォルダ", message: "フォルダ名を入力してください", preferredStyle: .alert)
+        alert.addTextField { textField in
+            textField.placeholder = "フォルダ名"
+        }
+        
+        let createAction = UIAlertAction(title: "作成", style: .default) { [weak self] _ in
+            guard let self = self else { return }
+            guard let folderName = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !folderName.isEmpty else { return }
+            
+            self.createFolder(named: folderName)
+        }
+        
+        alert.addAction(createAction)
+        alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel))
+        
+        present(alert, animated: true)
+    }
+    
 }
 
 // MARK: - Actions

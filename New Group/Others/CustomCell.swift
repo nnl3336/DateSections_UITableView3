@@ -10,8 +10,9 @@ import SwiftUI
 class CustomCell: UITableViewCell {
     let titleLabel = UILabel()
     let subtitleLabel = UILabel()
+    let folderLabel = UILabel()      // 下段のラベル
     let iconView = UIImageView()
-    let likeButton = UIButton(type: .system)  // 追加
+    let likeButton = UIButton(type: .system)
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -23,19 +24,25 @@ class CustomCell: UITableViewCell {
         iconView.clipsToBounds = true
         contentView.addSubview(iconView)
 
-        // タイトルラベル
+        // タイトルラベル（上）
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = UIFont.systemFont(ofSize: 17, weight: .bold)
         contentView.addSubview(titleLabel)
 
-        // サブタイトルラベル
+        // サブタイトル（日付＋テキスト２）（中）
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
-        subtitleLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        subtitleLabel.textColor = .gray
+        subtitleLabel.font = UIFont.systemFont(ofSize: 14)
+        subtitleLabel.textColor = .darkGray
         subtitleLabel.numberOfLines = 0
         contentView.addSubview(subtitleLabel)
 
-        // like ボタンの設定
+        // フォルダラベル（下）
+        folderLabel.translatesAutoresizingMaskIntoConstraints = false
+        folderLabel.font = UIFont.systemFont(ofSize: 13)
+        folderLabel.textColor = .gray
+        contentView.addSubview(folderLabel)
+
+        // Likeボタン
         likeButton.translatesAutoresizingMaskIntoConstraints = false
         likeButton.tintColor = .gray
         contentView.addSubview(likeButton)
@@ -54,7 +61,11 @@ class CustomCell: UITableViewCell {
             subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
             subtitleLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            subtitleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12),
+
+            folderLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+            folderLabel.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 4),
+            folderLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
+            folderLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12),
 
             likeButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             likeButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),

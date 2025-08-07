@@ -19,6 +19,8 @@ struct ContentView: View {
     }
 }
 
+//
+
 struct DateGroupedTableView: UIViewControllerRepresentable {
     @StateObject var store = MessageStore()
     //@Binding var messages: [MessageEntity]
@@ -59,6 +61,8 @@ struct DateGroupedTableView: UIViewControllerRepresentable {
         }
     }
 }
+
+//
 
 class DateGroupedTableViewController: UIViewController {
 

@@ -66,6 +66,8 @@ class MessageStore: NSObject, ObservableObject, NSFetchedResultsControllerDelega
 
     private let context = CoreDataManager.shared.context
     private var fetchedResultsController: NSFetchedResultsController<MessageEntity>!
+    
+    var folder: Folder? 
 
     override init() {
         super.init()
@@ -147,22 +149,28 @@ class MessageStore: NSObject, ObservableObject, NSFetchedResultsControllerDelega
 
 
 
-    func addMessage(_ attributedText: NSMutableAttributedString, selectedMessage: MessageEntity? = nil) {
+    func addMessage(_ attributedText: NSMutableAttributedString, selectedMessage: MessageEntity? = nil, folder: Folder? = nil) {
         print("addMessage called. selectedMessage: \(String(describing: selectedMessage))")
+
         let data = try? attributedText.data(
             from: NSRange(location: 0, length: attributedText.length),
-            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd])
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]
+        )
 
         if let messageToUpdate = selectedMessage {
             messageToUpdate.attributedText = data
+            // 必要であれば以下も
+            messageToUpdate.folder = folder
         } else {
             let newMessage = MessageEntity(context: context)
             newMessage.attributedText = data
             newMessage.date = Date()
             newMessage.liked = true
+            newMessage.folder = folder  // ✅ folder を関連付ける
             print("newMessage: \(newMessage)")
         }
+
         CoreDataManager.shared.saveContext()
-        // fetchMessages() は不要
     }
+
 }

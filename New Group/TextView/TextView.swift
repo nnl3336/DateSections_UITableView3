@@ -92,7 +92,7 @@ class DetailViewController: UIViewController {
             object: textView.undoManager
         )
         
-        updateUndoRedoButtons()
+        //updateUndoRedoButtons()
         
         // 通知を監視
         NotificationCenter.default.addObserver(
@@ -233,6 +233,14 @@ extension DetailViewController {
         )*/
 
         // 右のメニューと pencil ボタン
+        let trashAction = UIAction(
+            title: "Trash",
+            image: UIImage(systemName: "trash")
+            //attributes: message == nil ? [.destructive, .disabled] : [.destructive]
+        ) { _ in
+            self.confirmDeleteMessage()
+        }
+
         let menu = UIMenu(title: "", children: [
             UIAction(title: "History", image: UIImage(systemName: "clock")) { _ in
                 print("History tapped")
@@ -240,13 +248,11 @@ extension DetailViewController {
             UIAction(title: "Search Text", image: UIImage(systemName: "magnifyingglass")) { _ in
                 print("Search tapped")
             },
-            UIAction(title: "Trash", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                self.deleteMessageAndClose()
-            }
-
+            trashAction
         ])
 
         let menuButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu)
+
 
         newButton = UIBarButtonItem(
             image: UIImage(systemName: "square.and.pencil"),
@@ -304,6 +310,23 @@ extension DetailViewController {
 
 extension DetailViewController {
     
+    // MARK: - Func Navigation
+    
+    func confirmDeleteMessage() {
+        let alert = UIAlertController(title: "削除の確認",
+                                      message: "このメッセージを本当に削除してもよろしいですか？",
+                                      preferredStyle: .alert)
+
+        alert.addAction(UIAlertAction(title: "キャンセル", style: .cancel))
+
+        alert.addAction(UIAlertAction(title: "削除", style: .destructive) { _ in
+            self.deleteMessageAndClose()
+        })
+
+        self.present(alert, animated: true)
+    }
+
+    
     // MARK: - Func save
     
     func deleteMessageAndClose() {
@@ -311,7 +334,7 @@ extension DetailViewController {
         CoreDataManager.shared.context.delete(message)
         CoreDataManager.shared.saveContext()
         print("✅ Message deleted")
-        self.dismiss(animated: true)
+        self.navigationController?.popViewController(animated: true)
     }
 
     // MARK: - Func UI
