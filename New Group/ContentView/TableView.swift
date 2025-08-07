@@ -101,6 +101,10 @@ class DateGroupedTableViewController: UIViewController {
         }
     }
     
+    var slideMenuVC: SlideMenuViewController?
+    var dimmingView: UIView?
+    var isSlideMenuVisible = false
+    
     /*
      var isSelecting: Bool {
          get { isSelectingBinding?.wrappedValue ?? false }

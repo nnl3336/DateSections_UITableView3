@@ -46,6 +46,8 @@ class DetailViewController: UIViewController {
     var newButton: UIBarButtonItem!
     var pencilItem: UIBarButtonItem!
     
+    private var menuButton: UIBarButtonItem!
+    
     //***
     
     override func viewDidLoad() {
@@ -92,7 +94,7 @@ class DetailViewController: UIViewController {
             object: textView.undoManager
         )
         
-        //updateUndoRedoButtons()
+        updateUndoRedoButtons()
         
         // 通知を監視
         NotificationCenter.default.addObserver(
@@ -235,8 +237,9 @@ extension DetailViewController {
         // 右のメニューと pencil ボタン
         let trashAction = UIAction(
             title: "Trash",
-            image: UIImage(systemName: "trash")
+            image: UIImage(systemName: "trash"),
             //attributes: message == nil ? [.destructive, .disabled] : [.destructive]
+            attributes: [.destructive]
         ) { _ in
             self.confirmDeleteMessage()
         }
@@ -251,7 +254,7 @@ extension DetailViewController {
             trashAction
         ])
 
-        let menuButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu)
+        menuButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu)
 
 
         newButton = UIBarButtonItem(
@@ -339,7 +342,14 @@ extension DetailViewController {
 
     // MARK: - Func UI
     
-    func updatenewPostButtonState() {
+    func updateButtonState() {
+        newPostButton.isEnabled = (message != nil)
+        pencilItem.isEnabled = (message != nil)
+        newButton.isEnabled = (message != nil)
+        saveButton.isEnabled = (message != nil)
+    }
+    
+    /*func updatenewPostButtonState() {
         newPostButton.isEnabled = (message != nil)
     }
     
@@ -353,7 +363,7 @@ extension DetailViewController {
     
     func updateSaveButtonState() {
         saveButton.isEnabled = (message != nil)
-    }
+    }*/
 
     
     // MARK: - Func Resize
@@ -553,7 +563,10 @@ extension DetailViewController {
         messageText = NSMutableAttributedString(string: "")
         
         textView.attributedText = messageText
-
+        
+        updateUndoRedoButtons()
+        updateButtonState()
+        
     }
     
     @objc func saveText() {
@@ -764,6 +777,15 @@ extension DetailViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
         if message == nil {
             message = /*CoreDataManager.shared.createMessage()*/ store.createMessage()
+            
+            /*updateSaveButtonState()
+            updateNewButtonState()
+            updatePencilItemState()
+            updatenewPostButtonState()*/
+            
+            //navigationItem.rightBarButtonItems = [newButton, menuButton]
+            
+            updateButtonState()
         }
         
         // 編集内容を反映
@@ -772,11 +794,6 @@ extension DetailViewController: UITextViewDelegate {
         if let message = message {
             messageText = NSMutableAttributedString(attributedString: textView.attributedText)
         }
-        
-        updateSaveButtonState()
-        updateNewButtonState()
-        updatePencilItemState()
-        updatenewPostButtonState()
         
     }
 

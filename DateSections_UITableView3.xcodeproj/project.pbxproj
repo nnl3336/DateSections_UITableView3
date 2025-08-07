@@ -18,6 +18,7 @@
 		187818A52E3F77C1000C988A /* extension_TextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A42E3F77C1000C988A /* extension_TextView.swift */; };
 		187818A82E408FBE000C988A /* CustomCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187818A72E408FBE000C988A /* CustomCell.swift */; };
 		1883BCAB2E41F611003B697C /* ObservableObjectTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1883BCAA2E41F611003B697C /* ObservableObjectTextView.swift */; };
+		18E78FEF2E4567D600F2A92C /* SlideMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E78FEE2E4567D600F2A92C /* SlideMenu.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +53,7 @@
 		187818A42E3F77C1000C988A /* extension_TextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = extension_TextView.swift; sourceTree = "<group>"; };
 		187818A72E408FBE000C988A /* CustomCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCell.swift; sourceTree = "<group>"; };
 		1883BCAA2E41F611003B697C /* ObservableObjectTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableObjectTextView.swift; sourceTree = "<group>"; };
+		18E78FEE2E4567D600F2A92C /* SlideMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideMenu.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -122,6 +124,7 @@
 		182164E62E3DB9B500563DFC /* New Group */ = {
 			isa = PBXGroup;
 			children = (
+				18E78FED2E4567C000F2A92C /* SlideMenu */,
 				1883BCAD2E420838003B697C /* Others */,
 				1883BCAC2E4207E7003B697C /* Coordinator */,
 				187818A32E3F7769000C988A /* TextView */,
@@ -182,6 +185,14 @@
 				187818A72E408FBE000C988A /* CustomCell.swift */,
 			);
 			path = Others;
+			sourceTree = "<group>";
+		};
+		18E78FED2E4567C000F2A92C /* SlideMenu */ = {
+			isa = PBXGroup;
+			children = (
+				18E78FEE2E4567D600F2A92C /* SlideMenu.swift */,
+			);
+			path = SlideMenu;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -328,6 +339,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18E78FEF2E4567D600F2A92C /* SlideMenu.swift in Sources */,
 				187818A12E3F4837000C988A /* extension_TableView.swift in Sources */,
 				1883BCAB2E41F611003B697C /* ObservableObjectTextView.swift in Sources */,
 				182164D62E3CA3AD00563DFC /* TableView.swift in Sources */,

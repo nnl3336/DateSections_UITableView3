@@ -40,17 +40,26 @@ extension DateGroupedTableViewController {
         tableView.delegate = self
         tableView.allowsMultipleSelection = false
     }
-
     func setupNavigation() {
         navigationController?.navigationBar.prefersLargeTitles = true
         title = "メッセージ一覧"
 
+        // 左側（リーディング）にメニューボタンを追加
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "line.horizontal.3"),
+            style: .plain,
+            target: self,
+            action: #selector(addSlideMenu) // ここでスライドメニューを開く
+        )
+
+        // 右側（トレーリング）に既存のボタンを設定
         navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(image: UIImage(systemName: "folder" /*"folder.badge.plus"*/), style: .plain, target: self, action: #selector(addFolderTapped)),
+            UIBarButtonItem(image: UIImage(systemName: "folder"), style: .plain, target: self, action: #selector(addFolderTapped)),
             UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped)),
             UIBarButtonItem(title: "選択", style: .plain, target: self, action: #selector(toggleSelectionMode))
         ]
     }
+
 
     func setupToolbar() {
         navigationController?.setToolbarHidden(true, animated: false)
@@ -144,6 +153,59 @@ extension DateGroupedTableViewController: UITableViewDelegate {
 
 extension DateGroupedTableViewController {
     
+    // MARK: - SlideMenu 表示
+        
+        @objc func hideSlideMenu() {
+            guard let menuVC = slideMenuVC else { return }
+
+            UIView.animate(withDuration: 0.3, animations: {
+                menuVC.view.frame.origin.x = -menuVC.view.frame.width
+                self.dimmingView?.alpha = 0
+            }) { _ in
+                menuVC.willMove(toParent: nil)
+                menuVC.view.removeFromSuperview()
+                menuVC.removeFromParent()
+                self.dimmingView?.removeFromSuperview()
+
+                self.slideMenuVC = nil
+                self.dimmingView = nil
+                self.isSlideMenuVisible = false
+            }
+        }
+
+        func showSlideMenu() {
+            guard slideMenuVC == nil else { return }
+
+            let menuVC = SlideMenuViewController()
+            menuVC.didSelectFolder = { [weak self] folder in
+                print("Selected folder: \(folder)")
+                self?.hideSlideMenu()
+            }
+
+            addChild(menuVC)
+            view.addSubview(menuVC.view)
+            menuVC.didMove(toParent: self)
+
+            let width: CGFloat = 250
+            menuVC.view.frame = CGRect(x: -width, y: 0, width: width, height: view.frame.height)
+
+            // Dimming view
+            let dimming = UIView(frame: view.bounds)
+            dimming.backgroundColor = UIColor.black.withAlphaComponent(0.3)
+            dimming.alpha = 0
+            dimming.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(hideSlideMenu)))
+            view.insertSubview(dimming, belowSubview: menuVC.view)
+
+            slideMenuVC = menuVC
+            dimmingView = dimming
+            isSlideMenuVisible = true
+
+            UIView.animate(withDuration: 0.3) {
+                menuVC.view.frame.origin.x = 0
+                dimming.alpha = 1
+            }
+        }
+    
     // MARK: - Actions Folder
     
     private func createFolder(named name: String) {
@@ -185,6 +247,14 @@ extension DateGroupedTableViewController {
 // MARK: - Actions
 
 extension DateGroupedTableViewController {
+    
+    @objc func addSlideMenu() {
+        if isSlideMenuVisible {
+            hideSlideMenu()
+        } else {
+            showSlideMenu()
+        }
+    }
 
     @objc func likeTapped() {
         guard !selectedMessages.isEmpty else { return }
