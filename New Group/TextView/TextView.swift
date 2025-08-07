@@ -46,6 +46,14 @@ class DetailViewController: UIViewController {
     var newButton: UIBarButtonItem!
     var pencilItem: UIBarButtonItem!
     
+    private var trashAction: UIAction!
+    //private var historyAction: UIAction!
+    //private var searchAction: UIAction!
+    
+    //private var menu: UIMenu!
+    
+    //private var menuButton: UIBarButtonItem!
+    
     //***
     
     override func viewDidLoad() {
@@ -101,6 +109,9 @@ class DetailViewController: UIViewController {
             name: UIApplication.didEnterBackgroundNotification,
             object: nil
         )
+        
+        
+        setupMenu()
     }
     
     //***
@@ -233,6 +244,14 @@ extension DetailViewController {
         )*/
 
         // 右のメニューと pencil ボタン
+        trashAction = UIAction(
+            title: "Trash",
+            image: UIImage(systemName: "trash"),
+            attributes: message == nil ? [.destructive, .disabled] : [.destructive]
+        ) { _ in
+            self.confirmDeleteMessage()
+        }
+
         let menu = UIMenu(title: "", children: [
             UIAction(title: "History", image: UIImage(systemName: "clock")) { _ in
                 print("History tapped")
@@ -240,14 +259,11 @@ extension DetailViewController {
             UIAction(title: "Search Text", image: UIImage(systemName: "magnifyingglass")) { _ in
                 print("Search tapped")
             },
-            UIAction(title: "Trash", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                self.confirmDeleteMessage()
-            }
-
-
+            trashAction
         ])
 
         let menuButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu)
+
 
         newButton = UIBarButtonItem(
             image: UIImage(systemName: "square.and.pencil"),
@@ -259,6 +275,48 @@ extension DetailViewController {
 
         navigationItem.rightBarButtonItems = [newButton, menuButton]
     }
+    
+    //
+    
+    private func setupMenu() {
+            let historyAction = UIAction(title: "History", image: UIImage(systemName: "clock")) { _ in
+                print("History tapped")
+            }
+
+            searchAction = UIAction(title: "Search Text", image: UIImage(systemName: "magnifyingglass")) { _ in
+                print("Search tapped")
+            }
+
+            trashAction = makeTrashAction()
+
+            updateMenu()
+        }
+
+        private func makeTrashAction() -> UIAction {
+            UIAction(
+                title: "Trash",
+                image: UIImage(systemName: "trash"),
+                attributes: message == nil ? [.destructive, .disabled] : [.destructive]
+            ) { _ in
+                self.confirmDeleteMessage()
+            }
+        }
+
+        private func updateMenu() {
+            // trashAction 再生成（有効/無効を更新）
+            trashAction = makeTrashAction()
+
+            menu = UIMenu(title: "", children: [
+                historyAction,
+                searchAction,
+                trashAction
+            ])
+
+            self.navigationItem.rightBarButtonItem = UIBarButtonItem(
+                image: UIImage(systemName: "ellipsis"),
+                menu: menu
+            )
+        }
 
 }
 
@@ -334,7 +392,21 @@ extension DetailViewController {
 
     // MARK: - Func UI
     
-    func updatenewPostButtonState() {
+    func updateButtonState() {
+        trashAction = UIAction(
+            title: "Trash",
+            image: UIImage(systemName: "trash"),
+            attributes: message == nil ? [.destructive, .disabled] : [.destructive]
+        ) { _ in
+            self.confirmDeleteMessage()
+        }
+        newPostButton.isEnabled = (message != nil)
+        pencilItem.isEnabled = (message != nil)
+        newButton.isEnabled = (message != nil)
+        saveButton.isEnabled = (message != nil)
+    }
+    
+    /*func updatenewPostButtonState() {
         newPostButton.isEnabled = (message != nil)
     }
     
@@ -348,7 +420,7 @@ extension DetailViewController {
     
     func updateSaveButtonState() {
         saveButton.isEnabled = (message != nil)
-    }
+    }*/
 
     
     // MARK: - Func Resize
@@ -768,10 +840,12 @@ extension DetailViewController: UITextViewDelegate {
             messageText = NSMutableAttributedString(attributedString: textView.attributedText)
         }
         
-        updateSaveButtonState()
+        /*updateSaveButtonState()
         updateNewButtonState()
         updatePencilItemState()
-        updatenewPostButtonState()
+        updatenewPostButtonState()*/
+        
+        updateButtonState()
         
     }
 
