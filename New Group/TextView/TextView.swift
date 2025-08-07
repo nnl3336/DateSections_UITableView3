@@ -11,7 +11,7 @@ import UIKit
 class DetailViewController: UIViewController {
     var store: MessageStore!
     var message: MessageEntity?
-
+    
     private var hasFixedImageSizes = false
     
     var messageText: NSMutableAttributedString = NSMutableAttributedString(string: "")
@@ -32,7 +32,7 @@ class DetailViewController: UIViewController {
     // Undo/Redo ボタン
     var backButton: UIBarButtonItem!
     var redoButton: UIBarButtonItem!
-
+    
     // その他のボタン
     var saveButton: UIBarButtonItem!
     var photoButton: UIBarButtonItem!
@@ -45,6 +45,14 @@ class DetailViewController: UIViewController {
     
     var newButton: UIBarButtonItem!
     var pencilItem: UIBarButtonItem!
+    
+    private var trashAction: UIAction!
+    private var historyAction: UIAction!
+    private var searchAction: UIAction!
+    
+    private var menu: UIMenu!
+    
+    private var menuButton: UIBarButtonItem!
     
     //***
     
@@ -101,6 +109,8 @@ class DetailViewController: UIViewController {
             name: UIApplication.didEnterBackgroundNotification,
             object: nil
         )
+        
+        setupMenu()
     }
     
     //***
@@ -223,25 +233,71 @@ extension DetailViewController {
 
 extension DetailViewController {
     
-    func setupNavigationBar() {
-        // 左の戻るボタン（custom）
-        /*navigationItem.leftBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "chevron.left"),
-            style: .plain,
-            target: self,
-            action: #selector(backButtonTapped)
-        )*/
-
-        // 右のメニューと pencil ボタン
-        let trashAction = UIAction(
+    private func setupMenu() {
+        
+        historyAction = makeHistoryAction()
+        
+        searchAction = UIAction(title: "Search Text", image: UIImage(systemName: "magnifyingglass")) { _ in
+            print("Search tapped")
+        }
+        
+        trashAction = makeTrashAction()
+        
+        updateMenu()
+    }
+    
+    private func makeHistoryAction() -> UIAction {
+        UIAction(title: "History", image: UIImage(systemName: "clock")) { _ in
+            print("History tapped")
+        }
+    }
+    
+    private func makeTrashAction() -> UIAction {
+        UIAction(
             title: "Trash",
             image: UIImage(systemName: "trash"),
             attributes: message == nil ? [.destructive, .disabled] : [.destructive]
         ) { _ in
             self.confirmDeleteMessage()
         }
-
-        let menu = UIMenu(title: "", children: [
+    }
+    
+    private func updateMenu() {
+        // trashAction 再生成（有効/無効を更新）
+        trashAction = makeTrashAction()
+        
+        menu = UIMenu(title: "", children: [
+            historyAction,
+            searchAction,
+            trashAction
+        ])
+        
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "ellipsis"),
+            menu: menu
+        )
+    }
+    
+    
+    private func updateNavigationBar() {
+        updateMenu()
+        navigationItem.rightBarButtonItems = [newButton, menuButton]
+    }
+    
+    
+    func setupNavigationBar() {
+        // 左の戻るボタン（custom）
+        /*navigationItem.leftBarButtonItem = UIBarButtonItem(
+         image: UIImage(systemName: "chevron.left"),
+         style: .plain,
+         target: self,
+         action: #selector(backButtonTapped)
+         )*/
+        
+        // 右のメニューと pencil ボタン
+        trashAction = makeTrashAction()
+        
+        menu = UIMenu(title: "", children: [
             UIAction(title: "History", image: UIImage(systemName: "clock")) { _ in
                 print("History tapped")
             },
@@ -250,10 +306,10 @@ extension DetailViewController {
             },
             trashAction
         ])
-
-        let menuButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu)
-
-
+        
+        menuButton = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), menu: menu)
+        
+        
         newButton = UIBarButtonItem(
             image: UIImage(systemName: "square.and.pencil"),
             style: .plain,
@@ -261,10 +317,10 @@ extension DetailViewController {
             action: #selector(self.newPost)
         )
         newButton.isEnabled = (message != nil)
-
+        
         navigationItem.rightBarButtonItems = [newButton, menuButton]
     }
-
+    
 }
 
 // MARK: - Toolbar
@@ -764,6 +820,19 @@ extension DetailViewController: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
         if message == nil {
             message = /*CoreDataManager.shared.createMessage()*/ store.createMessage()
+            
+            updateSaveButtonState()
+            updateNewButtonState()
+            updatePencilItemState()
+            updatenewPostButtonState()
+            
+            trashAction = makeTrashAction()
+            
+            //menuButton.menu = menu  // ← ここで menuButton の menu を更新
+            
+            //updateMenu()
+            
+            updateNavigationBar()
         }
         
         // 編集内容を反映
@@ -773,11 +842,8 @@ extension DetailViewController: UITextViewDelegate {
             messageText = NSMutableAttributedString(attributedString: textView.attributedText)
         }
         
-        updateSaveButtonState()
-        updateNewButtonState()
-        updatePencilItemState()
-        updatenewPostButtonState()
         
+
     }
 
     /*func textViewDidBeginEditing(_ textView: UITextView) {
