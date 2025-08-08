@@ -32,7 +32,7 @@ class SlideMenuViewController: UIViewController {
         reloadVisibleFolders()
     }
 
-    // MARK: - Setup Methods
+    // MARK: - Setup Methods 
 
     private func setupFetchedResultsController() {
         let request: NSFetchRequest<Folder> = Folder.fetchRequest()
