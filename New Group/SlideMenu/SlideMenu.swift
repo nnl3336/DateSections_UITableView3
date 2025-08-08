@@ -110,19 +110,19 @@ extension SlideMenuViewController: NSFetchedResultsControllerDelegate {
 }
 
 extension SlideMenuViewController: UITableViewDataSource, UITableViewDelegate {
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return folders.count
+        return fetchedResultsController.fetchedObjects?.count ?? 0
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let folder = fetchedResultsController.object(at: indexPath)
+
         let cell = tableView.dequeueReusableCell(
             withIdentifier: FolderCell.reuseIdentifier,
             for: indexPath
         ) as! FolderCell
 
-        let folder = folders[indexPath.row]
-
-        // デフォルトフォルダはアイコンを変える
         if folder.isDefault {
             if folder.folderName == "Trash" {
                 cell.configure(with: folder.folderName ?? "", iconName: "trash")
@@ -136,7 +136,8 @@ extension SlideMenuViewController: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        didSelectFolder?(folders[indexPath.row])
+        let folder = fetchedResultsController.object(at: indexPath)
+        didSelectFolder?(folder)
     }
 }
 
