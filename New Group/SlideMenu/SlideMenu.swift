@@ -11,17 +11,32 @@ import UIKit
 
 class SlideMenuViewController: UIViewController {
     var context: NSManagedObjectContext!
-    var folders: [Folder] = []
-    var didSelectFolder: ((Folder) -> Void)?
+        var fetchedResultsController: NSFetchedResultsController<Folder>!
 
-    private let tableView = UITableView()
+        private let tableView = UITableView()
+        var didSelectFolder: ((Folder) -> Void)?
+    
+        var folders: [Folder] = []
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .systemGray6
-        setupTableView()
-        fetchFolders()
-    }
+        override func viewDidLoad() {
+            super.viewDidLoad()
+            setupTableView()
+            setupFetchedResultsController()
+            try? fetchedResultsController.performFetch()
+        }
+    
+    private func setupFetchedResultsController() {
+            let request: NSFetchRequest<Folder> = Folder.fetchRequest()
+            request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: true)]
+
+            fetchedResultsController = NSFetchedResultsController(
+                fetchRequest: request,
+                managedObjectContext: context,
+                sectionNameKeyPath: nil,
+                cacheName: nil
+            )
+            fetchedResultsController.delegate = self
+        }
 
     private func setupTableView() {
         tableView.frame = view.bounds
@@ -90,6 +105,10 @@ class SlideMenuViewController: UIViewController {
 
 //
 
+extension SlideMenuViewController: NSFetchedResultsControllerDelegate {
+    
+}
+
 extension SlideMenuViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return folders.count
@@ -121,6 +140,7 @@ extension SlideMenuViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
+/*
 extension SlideMenuViewController {
     
     func setupDefaultFolders(context: NSManagedObjectContext) {
@@ -143,3 +163,4 @@ extension SlideMenuViewController {
     }
     
 }
+*/
