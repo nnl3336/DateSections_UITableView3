@@ -110,6 +110,45 @@ extension SlideMenuViewController: NSFetchedResultsControllerDelegate {
 }
 
 extension SlideMenuViewController: UITableViewDataSource, UITableViewDelegate {
+    
+    // Auto add
+    
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        tableView.beginUpdates()
+    }
+
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        tableView.endUpdates()
+    }
+
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
+                    didChange anObject: Any,
+                    at indexPath: IndexPath?,
+                    for type: NSFetchedResultsChangeType,
+                    newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            if let newIndexPath = newIndexPath {
+                tableView.insertRows(at: [newIndexPath], with: .automatic)
+            }
+        case .delete:
+            if let indexPath = indexPath {
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+            }
+        case .update:
+            if let indexPath = indexPath {
+                tableView.reloadRows(at: [indexPath], with: .automatic)
+            }
+        case .move:
+            if let indexPath = indexPath, let newIndexPath = newIndexPath {
+                tableView.moveRow(at: indexPath, to: newIndexPath)
+            }
+        @unknown default:
+            break
+        }
+    }
+
+    //
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return fetchedResultsController.fetchedObjects?.count ?? 0
@@ -123,15 +162,15 @@ extension SlideMenuViewController: UITableViewDataSource, UITableViewDelegate {
             for: indexPath
         ) as! FolderCell
 
-        if folder.isDefault {
-            if folder.folderName == "Trash" {
-                cell.configure(with: folder.folderName ?? "", iconName: "trash")
-            } else {
-                cell.configure(with: folder.folderName ?? "", iconName: "note.text")
-            }
-        } else {
+        switch folder.folderName {
+        case "Trash":
+            cell.configure(with: folder.folderName ?? "", iconName: "trash")
+        case "Memo":
+            cell.configure(with: folder.folderName ?? "", iconName: "note.text")
+        default:
             cell.configure(with: folder.folderName ?? "", iconName: "folder")
         }
+
         return cell
     }
 
