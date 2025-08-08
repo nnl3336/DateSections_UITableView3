@@ -10,33 +10,40 @@ import CoreData
 import UIKit
 
 class SlideMenuViewController: UIViewController {
+    // MARK: - Properties
+
     var context: NSManagedObjectContext!
-        var fetchedResultsController: NSFetchedResultsController<Folder>!
+    var fetchedResultsController: NSFetchedResultsController<Folder>!
 
-        private let tableView = UITableView()
-        var didSelectFolder: ((Folder) -> Void)?
-    
-        var folders: [Folder] = []
+    private let tableView = UITableView()
+    var didSelectFolder: ((Folder) -> Void)?
 
-        override func viewDidLoad() {
-            super.viewDidLoad()
-            setupTableView()
-            setupFetchedResultsController()
-            try? fetchedResultsController.performFetch()
-        }
-    
+    private var visibleFolders: [Folder] = []
+    private var expandedFolderIDs = Set<NSManagedObjectID>()
+
+    // MARK: - Lifecycle
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupTableView()
+        setupFetchedResultsController()
+        try? fetchedResultsController.performFetch()
+        checkAndAddDefaultFoldersIfNeeded()
+        reloadVisibleFolders()
+    }
+
+    // MARK: - Setup Methods
+
     private func setupFetchedResultsController() {
-            let request: NSFetchRequest<Folder> = Folder.fetchRequest()
-            request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: true)]
-
-            fetchedResultsController = NSFetchedResultsController(
-                fetchRequest: request,
-                managedObjectContext: context,
-                sectionNameKeyPath: nil,
-                cacheName: nil
-            )
-            fetchedResultsController.delegate = self
-        }
+        let request: NSFetchRequest<Folder> = Folder.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: true)]
+        fetchedResultsController = NSFetchedResultsController(
+            fetchRequest: request,
+            managedObjectContext: context,
+            sectionNameKeyPath: nil,
+            cacheName: nil)
+        fetchedResultsController.delegate = self
+    }
 
     private func setupTableView() {
         tableView.frame = view.bounds
@@ -47,78 +54,129 @@ class SlideMenuViewController: UIViewController {
         view.addSubview(tableView)
     }
 
-    func fetchFolders() {
-        let request: NSFetchRequest<Folder> = Folder.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: true)]
+    // MARK: - Default Folders Check
 
-        do {
-            var fetched = try context.fetch(request)
+    private func checkAndAddDefaultFoldersIfNeeded() {
+        guard let folders = fetchedResultsController.fetchedObjects else { return }
 
-            // デフォルトフォルダ（存在しなければ追加）
-            let defaultFolders: [(name: String, icon: String)] = [
-                ("Memo", "note.text"),
-                ("Trash", "trash")
-            ]
+        let defaultFolders = [
+            ("Memo", "note.text"),
+            ("Trash", "trash")
+        ]
 
-            var needsSave = false
-            for def in defaultFolders {
-                if !fetched.contains(where: { $0.folderName == def.name }) {
-                    let folder = Folder(context: context)
-                    folder.folderName = def.name
-                    folder.isDefault = true
-                    folder.createdAt = Date()
-                    needsSave = true
-                    fetched.append(folder)  // いったん最後に追加
+        var needsSave = false
+        for def in defaultFolders {
+            if !folders.contains(where: { $0.folderName == def.0 }) {
+                let folder = Folder(context: context)
+                folder.folderName = def.0
+                folder.isDefault = true
+                folder.createdAt = Date()
+                needsSave = true
+            }
+        }
+        if needsSave {
+            try? context.save()
+            try? fetchedResultsController.performFetch()
+        }
+    }
+
+    // MARK: - Folder Management
+
+    func reloadVisibleFolders() {
+        visibleFolders = []
+        if let rootFolders = fetchedResultsController.fetchedObjects?.filter({ $0.parent == nil }) {
+            for folder in rootFolders.sorted(by: { $0.createdAt ?? Date() < $1.createdAt ?? Date() }) {
+                visibleFolders.append(folder)
+                if expandedFolderIDs.contains(folder.objectID) {
+                    appendChildren(of: folder)
                 }
             }
+        }
+    }
 
-            if needsSave {
-                try context.save()
+    func appendChildren(of folder: Folder) {
+        guard let childrenSet = folder.children as? Set<Folder> else { return }
+        let sortedChildren = childrenSet.sorted(by: { $0.createdAt ?? Date() < $1.createdAt ?? Date() })
+        for child in sortedChildren {
+            visibleFolders.append(child)
+            if expandedFolderIDs.contains(child.objectID) {
+                appendChildren(of: child)
             }
+        }
+    }
 
-            // 並び替え：Memoが先頭、Trashは末尾、残りはそのまま
-            folders = fetched.sorted { a, b in
-                if a.folderName == "Memo" {
-                    return true   // aを先頭に
-                }
-                if b.folderName == "Memo" {
-                    return false  // bを先頭に
-                }
-                if a.folderName == "Trash" {
-                    return false  // aを最後に
-                }
-                if b.folderName == "Trash" {
-                    return true   // bを最後に
-                }
-                // それ以外は作成日時の昇順
-                return (a.createdAt ?? Date()) < (b.createdAt ?? Date())
+
+    func getFolderLevel(_ folder: Folder) -> Int {
+        var level = 0
+        var current = folder
+        while let parents = current.parent as? Set<Folder>, let firstParent = parents.first {
+            level += 1
+            current = firstParent
+        }
+        return level
+    }
+
+}
+
+// MARK: - UITableViewDataSource, UITableViewDelegate
+extension SlideMenuViewController: UITableViewDataSource, UITableViewDelegate {
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return visibleFolders.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let folder = visibleFolders[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: FolderCell.reuseIdentifier, for: indexPath) as! FolderCell
+
+        cell.indentationLevel = getFolderLevel(folder)
+
+        switch folder.folderName {
+        case "Trash":
+            cell.configure(with: folder.folderName ?? "", iconName: "trash")
+        case "Memo":
+            cell.configure(with: folder.folderName ?? "", iconName: "note.text")
+        default:
+            cell.configure(with: folder.folderName ?? "", iconName: "folder")
+        }
+
+        if let childrenSet = folder.children as? Set<Folder>, !childrenSet.isEmpty {
+            // childrenSetはSet<Folder>なのでisEmptyが使える
+            cell.accessoryView = UIImageView(image: UIImage(systemName: expandedFolderIDs.contains(folder.objectID) ? "chevron.down" : "chevron.right"))
+        } else {
+            cell.accessoryView = nil
+        }
+
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let folder = visibleFolders[indexPath.row]
+        if let childrenSet = folder.children as? Set<Folder>, !childrenSet.isEmpty {
+            if expandedFolderIDs.contains(folder.objectID) {
+                expandedFolderIDs.remove(folder.objectID)
+            } else {
+                expandedFolderIDs.insert(folder.objectID)
             }
-
+            reloadVisibleFolders()
             tableView.reloadData()
-
-        } catch {
-            print("Failed to fetch folders:", error)
+        } else {
+            didSelectFolder?(folder)
         }
     }
 
 }
 
-//
-
+// MARK: - NSFetchedResultsControllerDelegate
 extension SlideMenuViewController: NSFetchedResultsControllerDelegate {
-    
-}
-
-extension SlideMenuViewController: UITableViewDataSource, UITableViewDelegate {
-    
-    // Auto add
-    
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.beginUpdates()
     }
 
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.endUpdates()
+        reloadVisibleFolders()
+        tableView.reloadData()
     }
 
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
@@ -147,38 +205,8 @@ extension SlideMenuViewController: UITableViewDataSource, UITableViewDelegate {
             break
         }
     }
-
-    //
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return fetchedResultsController.fetchedObjects?.count ?? 0
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let folder = fetchedResultsController.object(at: indexPath)
-
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: FolderCell.reuseIdentifier,
-            for: indexPath
-        ) as! FolderCell
-
-        switch folder.folderName {
-        case "Trash":
-            cell.configure(with: folder.folderName ?? "", iconName: "trash")
-        case "Memo":
-            cell.configure(with: folder.folderName ?? "", iconName: "note.text")
-        default:
-            cell.configure(with: folder.folderName ?? "", iconName: "folder")
-        }
-
-        return cell
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let folder = fetchedResultsController.object(at: indexPath)
-        didSelectFolder?(folder)
-    }
 }
+
 
 /*
 extension SlideMenuViewController {
